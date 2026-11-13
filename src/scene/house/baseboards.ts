@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { Y_GF_TOP, Y_L2_TOP } from "../../config";
-import type { HouseRecord, Wall } from "../../types";
-import { addBox, solidRects } from "../geom";
-import type { Materials } from "../materials";
+import { Y_GF_TOP, Y_L2_TOP } from "@/config";
+import type { HouseRecord, Wall } from "@/types";
+import { addBox, solidRects } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function baseboards(
   parent: THREE.Object3D,

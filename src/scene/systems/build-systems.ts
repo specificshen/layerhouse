@@ -1,5 +1,5 @@
-import type { HouseGroups, HouseRecord } from "../../types";
-import type { Materials } from "../materials";
+import type { HouseGroups, HouseRecord } from "@/types";
+import type { Materials } from "@/materials";
 import { electrical } from "./electrical";
 import { framing } from "./framing";
 import { hvac } from "./hvac";

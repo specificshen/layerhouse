@@ -1,4 +1,4 @@
-import { STATS, SUBTITLE, TIMES, TITLE, VIEW_MODES } from "../config";
+import { STATS, SUBTITLE, TIMES, TITLE, VIEW_MODES } from "@/config";
 
 function text(id: string, value: string) {
   const el = document.getElementById(id);

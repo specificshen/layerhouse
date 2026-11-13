@@ -1,4 +1,4 @@
-import type { Session } from "../../app/session";
+import type { Session } from "@/world/session";
 
 export function toggleNearestDoor(s: Session) {
   let best: (typeof s.rec.doors)[number] | null = null;

@@ -1,4 +1,4 @@
-import type { HouseRecord } from "../../types";
+import type { HouseRecord } from "@/types";
 
 export function heightAt(rec: HouseRecord, x: number, z: number, feetY?: number): number {
   for (const s of rec.stairs) {

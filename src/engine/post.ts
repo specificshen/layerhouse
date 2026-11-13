@@ -17,10 +17,10 @@ import {
   screenUV,
   vec4,
 } from "three/tsl";
-import { QUALITY } from "../config";
-import type { BloomState } from "./session";
+import { QUALITY } from "@/config";
+import type { BloomState } from "@/world/session";
 
-export interface PipelineHandle {
+interface PipelineHandle {
   pipeline: PostProcessing;
   bloomNode: BloomNode;
 }

@@ -1,4 +1,4 @@
-import type { Session } from "../../app/session";
+import type { Session } from "@/world/session";
 import { applyWalkLook } from "./apply-walk-look";
 
 export function bindWalkPointer(s: Session) {

@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { addBox, addCyl, addSphere } from "../geom";
-import type { Materials } from "../materials";
-import type { HouseRecord } from "../../types";
+import { addBox, addCyl, addSphere } from "@/geom";
+import type { Materials } from "@/materials";
+import type { HouseRecord } from "@/types";
 import {
   addArch,
   addBowl,

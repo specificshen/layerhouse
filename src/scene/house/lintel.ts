@@ -1,7 +1,7 @@
-import { MAIN, WALL_T, WING, Y_GF_CEIL } from "../../config";
-import type { HouseGroups, HouseRecord } from "../../types";
-import { addBox } from "../geom";
-import type { Materials } from "../materials";
+import { MAIN, WALL_T, WING, Y_GF_CEIL } from "@/config";
+import type { HouseGroups, HouseRecord } from "@/types";
+import { addBox } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function lintel(groups: HouseGroups, mats: Materials, rec: HouseRecord) {
   // Interior lintel / returns at living→wing opening (z = MAIN.z0, x = WING range)

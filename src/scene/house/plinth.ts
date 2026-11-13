@@ -1,7 +1,7 @@
-import { MAIN, WING, Y_GF_TOP } from "../../config";
-import type { HouseGroups, HouseRecord } from "../../types";
-import { addBox } from "../geom";
-import type { Materials } from "../materials";
+import { MAIN, WING, Y_GF_TOP } from "@/config";
+import type { HouseGroups, HouseRecord } from "@/types";
+import { addBox } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function plinth(groups: HouseGroups, mats: Materials, rec: HouseRecord) {
   // Perimeter skirt only. A full-footprint plinth sat 20 mm above FFL and hid the oak finish.

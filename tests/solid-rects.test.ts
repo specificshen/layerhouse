@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { solidRects } from "../src/scene/geom";
+import { solidRects } from "@/geom";
 
 const opening = (a0: number, a1: number, y0: number, y1: number) => ({ a0, a1, y0, y1 });
 

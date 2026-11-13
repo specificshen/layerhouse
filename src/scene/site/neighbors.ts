@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { addBox, addCyl } from "../geom";
-import type { Materials } from "../materials";
-import type { HouseRecord, Vec3 } from "../../types";
+import { addBox, addCyl } from "@/geom";
+import type { Materials } from "@/materials";
+import type { HouseRecord, Vec3 } from "@/types";
 
 type RoofKind = "gable" | "hip" | "shed";
 type WallFace = "px" | "nx" | "pz" | "nz";

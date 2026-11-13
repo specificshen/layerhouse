@@ -23,4 +23,4 @@ export {
 export { LAYERS, STATS, SUBTITLE, TIMES, TITLE, VIEW_MODES } from "./labels";
 export { QUALITY, ROOF_LIFT } from "./render";
 export { CARPORT, LOT, WATER_EDGE } from "./site";
-export { TOD } from "./time-of-day";
+export { TOD } from "./time";

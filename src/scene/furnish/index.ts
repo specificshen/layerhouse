@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { Y_GF_CEIL, Y_GF_TOP, Y_L2_CEIL, Y_L2_TOP } from "../../config";
-import { addBox, addCyl, addSphere } from "../geom";
-import type { Materials } from "../materials";
-import type { HouseGroups, HouseRecord } from "../../types";
+import { Y_GF_CEIL, Y_GF_TOP, Y_L2_CEIL, Y_L2_TOP } from "@/config";
+import { addBox, addCyl, addSphere } from "@/geom";
+import type { Materials } from "@/materials";
+import type { HouseGroups, HouseRecord } from "@/types";
 import { addCone } from "./forms";
 import { createFurnishPalette } from "./palette";
 import {

@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { Y_GF_CEIL, Y_L2_CEIL } from "../../config";
-import type { HouseRecord } from "../../types";
-import { addBox, addCyl, BoxBatch, CylBatch } from "../geom";
-import type { Materials } from "../materials";
+import { Y_GF_CEIL, Y_L2_CEIL } from "@/config";
+import type { HouseRecord } from "@/types";
+import { addBox, addCyl, BoxBatch, CylBatch } from "@/geom";
+import type { Materials } from "@/materials";
 
 function addDuctXYZ(
   _cyl: CylBatch | null,

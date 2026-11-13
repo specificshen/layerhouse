@@ -1,4 +1,4 @@
-import { CylBatch } from "../geom";
+import { CylBatch } from "@/geom";
 
 export function wirePath(
   batch: CylBatch,

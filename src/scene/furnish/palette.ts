@@ -1,5 +1,5 @@
 import type { MeshStandardMaterial } from "three";
-import type { Materials } from "../materials";
+import type { Materials } from "@/materials";
 
 export interface FurnishPalette {
   oak: MeshStandardMaterial;

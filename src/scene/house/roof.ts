@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { MAIN, ROOF, WING, Y_L2_TOP, Y_L2_WALL_TOP } from "../../config";
-import { addBox, addCyl, registerMeshClip } from "../geom";
-import type { Materials } from "../materials";
-import type { HouseRecord } from "../../types";
+import { MAIN, ROOF, WING, Y_L2_TOP, Y_L2_WALL_TOP } from "@/config";
+import { addBox, addCyl, registerMeshClip } from "@/geom";
+import type { Materials } from "@/materials";
+import type { HouseRecord } from "@/types";
 
 function standingSeams(
   parent: THREE.Object3D,

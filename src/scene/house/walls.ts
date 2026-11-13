@@ -7,8 +7,8 @@ import {
   Y_GF_TOP,
   Y_L2_TOP,
   Y_L2_WALL_TOP,
-} from "../../config";
-import type { Wall } from "../../types";
+} from "@/config";
+import type { Wall } from "@/types";
 
 export function defineWalls(): Wall[] {
   const T = WALL_T;

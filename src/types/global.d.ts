@@ -22,6 +22,6 @@ export interface DemoApi {
 
 declare global {
   interface Window {
-    __demo: DemoApi;
+    __demo?: DemoApi;
   }
 }

@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { FINISH_T, MAIN, STRUCT_T, WING, Y_GF_CEIL, Y_L2_CEIL, Y_L2_TOP } from "../../config";
-import type { HouseGroups, HouseRecord } from "../../types";
-import { addBox } from "../geom";
-import type { Materials } from "../materials";
+import { FINISH_T, MAIN, STRUCT_T, WING, Y_GF_CEIL, Y_L2_CEIL, Y_L2_TOP } from "@/config";
+import type { HouseGroups, HouseRecord } from "@/types";
+import { addBox } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function ceilings(
   groups: HouseGroups,

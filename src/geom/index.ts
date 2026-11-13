@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { HouseRecord } from "../../types";
+import type { HouseRecord } from "@/types";
 
 export function registerMeshClip(rec: HouseRecord, mesh: THREE.Object3D, lifts = false) {
   mesh.updateWorldMatrix(true, false);
@@ -19,7 +19,7 @@ export function registerMeshClip(rec: HouseRecord, mesh: THREE.Object3D, lifts =
   });
 }
 
-export interface MeshFlags {
+interface MeshFlags {
   noShadow?: boolean;
   noCast?: boolean;
   name?: string;
@@ -36,14 +36,14 @@ export interface MeshFlags {
   low?: boolean;
 }
 
-export interface WallRect {
+interface WallRect {
   a0: number;
   a1: number;
   y0: number;
   y1: number;
 }
 
-export interface OpeningSpan {
+interface OpeningSpan {
   a0: number;
   a1: number;
   y0: number;
@@ -73,14 +73,14 @@ interface CylItem {
   rotY: number;
 }
 
-export interface BatchFlushFlags {
+interface BatchFlushFlags {
   cast?: boolean;
   receive?: boolean;
   clip?: boolean;
   rec?: HouseRecord | null;
 }
 
-export const GEO = {
+const GEO = {
   box: new THREE.BoxGeometry(1, 1, 1),
   cyl: new THREE.CylinderGeometry(0.5, 0.5, 1, 12),
   cyl6: new THREE.CylinderGeometry(0.5, 0.5, 1, 8),
@@ -92,7 +92,7 @@ export const GEO = {
   plane: new THREE.PlaneGeometry(1, 1),
 };
 
-export function makeBox(
+function makeBox(
   sx: number,
   sy: number,
   sz: number,

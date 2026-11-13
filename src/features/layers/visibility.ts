@@ -1,6 +1,6 @@
-import type { Session } from "../../app/session";
-import type { LayerId, Mode } from "../../types";
-import { LAYER_IDS } from "../../types";
+import type { Session } from "@/world/session";
+import type { LayerId, Mode } from "@/types";
+import { LAYER_IDS } from "@/types";
 
 /** `selected` shows the layer only when it is the x-ray pick. Landscape stays on in x-ray. */
 type Cell = boolean | "selected";

@@ -1,0 +1,30 @@
+import type { TimeRecipe } from "@/types";
+
+/** Dusk lighting and sky. Scene bootstrap reads this object instead of copying the numbers. */
+export const dusk = {
+  top: 0x5a6a9a,
+  horizon: 0xf0a888,
+  bottom: 0xe09078,
+  sunColor: 0xff9a6a,
+  sunDir: [-0.78, 0.14, 0.28],
+  sunSize: 0.997,
+  glow: 1.35,
+  hemiSky: 0xe8a888,
+  hemiGround: 0x3a3a48,
+  hemi: 0.48,
+  amb: 0x4a4058,
+  ambInt: 0.22,
+  sunInt: 0.95,
+  sunColorDir: 0xff8a62,
+  fillInt: 0.18,
+  fillColor: 0x6a70a8,
+  exposure: 0.88,
+  fog: 0x8a6a72,
+  fogDen: 0.01,
+  lamps: 1,
+  windowWarm: 1,
+  poolGlow: 1,
+  waterTint: 0x5a4a62,
+  grass: 0x2a4a28,
+  shadow: 0.88,
+} as const satisfies TimeRecipe;

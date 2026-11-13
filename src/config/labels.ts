@@ -1,4 +1,4 @@
-import type { LayerId, TimeId, ViewMode } from "../types";
+import type { LayerId, TimeId, ViewMode } from "@/types";
 
 export const TITLE = "层宅";
 export const SUBTITLE = "Layer House";

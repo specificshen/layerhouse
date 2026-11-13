@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { cutRange } from "../src/app/section";
-import type { CutDir } from "../src/types";
-import type { Session } from "../src/app/session";
+import { cutRange } from "@/world/section";
+import type { CutDir } from "@/types";
+import type { Session } from "@/world/session";
 
 function session(cutDir: CutDir): Session {
   return { cutDir } as Session;

@@ -8,9 +8,9 @@ import type {
   PostProcessing,
   WebGPURenderer,
 } from "three/webgpu";
-import type { Materials } from "../scene/materials";
-import type { SkyHandle } from "../scene/sky";
-import type { CutDir, HouseRecord, LayerId, Mode, TimeId, ViewMode } from "../types";
+import type { Materials } from "@/materials";
+import type { SkyHandle } from "@/scene/sky";
+import type { CutDir, HouseRecord, LayerId, Mode, TimeId, ViewMode } from "@/types";
 
 export interface BloomState {
   strength: number;

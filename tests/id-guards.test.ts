@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { CUT_DIRS, TIME_IDS, VIEW_MODE_IDS, isCutDir, isTimeId, isViewMode } from "../src/types";
+import { CUT_DIRS, TIME_IDS, VIEW_MODE_IDS, isCutDir, isTimeId, isViewMode } from "@/types";
 
 describe("id type guards", () => {
   test("isViewMode accepts only the dial modes", () => {

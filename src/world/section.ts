@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { ClippingGroup } from "three/webgpu";
-import type { ClipBox, LayerId, OrientedClip } from "../types";
+import type { ClipBox, LayerId, OrientedClip } from "@/types";
 import type { Session } from "./session";
-import { mustEl } from "../ui/dom";
+import { mustEl } from "@/ui/dom";
 
 const EDGES: Array<[number, number]> = [
   [0, 1],
@@ -296,7 +296,7 @@ function rebuildSectionBox(s: Session) {
   s.sectionBox.add(new THREE.Line(g, s.mats.sectionLine));
 }
 
-export const CLIP_TARGETS: LayerId[] = [
+const CLIP_TARGETS: LayerId[] = [
   "framing",
   "masonry",
   "roof",

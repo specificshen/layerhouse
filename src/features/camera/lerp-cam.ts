@@ -1,5 +1,5 @@
-import type { Session } from "../../app/session";
-import type { Vec3 } from "../../types";
+import type { Session } from "@/world/session";
+import type { Vec3 } from "@/types";
 
 export function lerpCam(s: Session, pos: Vec3 | number[], target: Vec3 | number[], dur = 0.95) {
   s.cam.active = true;

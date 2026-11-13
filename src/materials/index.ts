@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { COLORS } from "../../config";
+import { COLORS } from "@/config";
 import type {
   MeshPhysicalMaterial,
   MeshStandardMaterial,

@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { CARPORT, LOT, WATER_EDGE } from "../../config";
-import { addBox, addCyl } from "../geom";
-import type { Materials } from "../materials";
-import type { HouseRecord } from "../../types";
+import { CARPORT, LOT, WATER_EDGE } from "@/config";
+import { addBox, addCyl } from "@/geom";
+import type { Materials } from "@/materials";
+import type { HouseRecord } from "@/types";
 
 export function buildFence(parent: THREE.Object3D, mats: Materials, rec: HouseRecord) {
   const slatH = 0.08,

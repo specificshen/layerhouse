@@ -1,6 +1,6 @@
-import { CAM, EYE } from "../../config";
-import { heightAt } from "../../scene/house";
-import type { Session } from "../../app/session";
+import { CAM, EYE } from "@/config";
+import { heightAt } from "@/scene/house";
+import type { Session } from "@/world/session";
 import { applyWalkLook } from "./apply-walk-look";
 
 const walkStart = CAM.walkStart;

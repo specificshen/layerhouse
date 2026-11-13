@@ -1,5 +1,5 @@
-import { CAM } from "../../config";
-import type { CutDir, Mode } from "../../types";
+import { CAM } from "@/config";
+import type { CutDir, Mode } from "@/types";
 
 export function orbitPreset(mode: Mode, cutDir: CutDir) {
   if (mode === "cut") {

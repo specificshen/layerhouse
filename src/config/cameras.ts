@@ -1,4 +1,4 @@
-import type { OrbitPreset, WalkPreset } from "../types";
+import type { OrbitPreset, WalkPreset } from "@/types";
 import { EYE, Y_GF_TOP } from "./house";
 
 export const CAM = {

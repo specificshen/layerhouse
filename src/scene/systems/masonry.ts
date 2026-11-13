@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { MAIN, WING } from "../../config";
-import type { HouseRecord, Wall } from "../../types";
-import { addBox, buildWall } from "../geom";
-import type { Materials } from "../materials";
+import { MAIN, WING } from "@/config";
+import type { HouseRecord, Wall } from "@/types";
+import { addBox, buildWall } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function masonry(parent: THREE.Object3D, walls: Wall[], mats: Materials, rec: HouseRecord) {
   // Exterior CMU/concrete shell following exterior walls, slightly thicker, with same openings
