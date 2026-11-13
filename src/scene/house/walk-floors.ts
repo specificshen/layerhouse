@@ -1,5 +1,5 @@
-import { MAIN, WING, Y_GF_TOP, Y_L2_TOP } from "../../config";
-import type { HouseRecord } from "../../types";
+import { MAIN, WING, Y_GF_TOP, Y_L2_TOP } from "@/config";
+import type { HouseRecord } from "@/types";
 
 export function walkFloors(rec: HouseRecord) {
   const well = rec.well;

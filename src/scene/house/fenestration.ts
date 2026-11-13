@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { addBox, addCyl } from "../geom";
-import type { Materials } from "../materials";
-import type { DoorStyle, HouseRecord, Wall, WallAxis } from "../../types";
+import { addBox, addCyl } from "@/geom";
+import type { Materials } from "@/materials";
+import type { DoorStyle, HouseRecord, Wall, WallAxis } from "@/types";
 
 /** Local X of the hinge. −1 is the −X side of the door group. */
 function leafHingeAt(axis: WallAxis, hinge: "a0" | "a1"): -1 | 1 {

@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { MAIN, WING, Y_L2_CEIL, Y_L2_TOP } from "../../config";
-import type { HouseRecord } from "../../types";
-import { BoxBatch, runAlong, solidRects } from "../geom";
-import type { Materials } from "../materials";
+import { MAIN, WING, Y_L2_CEIL, Y_L2_TOP } from "@/config";
+import type { HouseRecord } from "@/types";
+import { BoxBatch, runAlong, solidRects } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function insulation(parent: THREE.Object3D, rec: HouseRecord, mats: Materials) {
   const batts = new BoxBatch(mats.insulation, "batts");

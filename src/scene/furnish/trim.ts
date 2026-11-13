@@ -1,7 +1,7 @@
 import type * as THREE from "three";
-import { MAIN, WALL_T, WING, Y_GF_CEIL } from "../../config";
-import { addBox } from "../geom";
-import type { HouseRecord } from "../../types";
+import { MAIN, WALL_T, WING, Y_GF_CEIL } from "@/config";
+import { addBox } from "@/geom";
+import type { HouseRecord } from "@/types";
 import type { FurnishPalette } from "./palette";
 
 interface CrownRun {

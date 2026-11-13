@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { FINISH_T, MAIN, STRUCT_T, WING, Y_L2_CEIL, Y_L2_TOP, Y_L2_WALL_TOP } from "../../config";
-import type { HouseRecord } from "../../types";
-import { addBox, BoxBatch, runAlong } from "../geom";
-import type { Materials } from "../materials";
+import { FINISH_T, MAIN, STRUCT_T, WING, Y_L2_CEIL, Y_L2_TOP, Y_L2_WALL_TOP } from "@/config";
+import type { HouseRecord } from "@/types";
+import { addBox, BoxBatch, runAlong } from "@/geom";
+import type { Materials } from "@/materials";
 
 export function framing(parent: THREE.Object3D, rec: HouseRecord, mats: Materials) {
   const studs = new BoxBatch(mats.framing, "studs");

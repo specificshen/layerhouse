@@ -34,7 +34,7 @@ bun fmt
 bun build
 ```
 
-会在 `dist/index.html` 生成一份**独立的单文件 HTML**：JavaScript、CSS 和 favicon 都会内联进去，没有旁边的 `.js` / `.css` 依赖。可以用任意静态服务器打开，也可以直接用浏览器打开该文件（`file://`）。
+会在 `dist/index.html` 生成一份**独立的单文件 HTML**：JavaScript、CSS 和 favicon 都会内联进去，没有旁边的 `.js` / `.css` 依赖。可以用任意静态服务器打开，也可以直接用浏览器打开该文件（`file://`）。构建时加上 `--define __LAYERHOUSE_DEV__=false`，所以生产包里没有 `window.__demo`；`bun dev` 不定义这个标志，调试钩子仍在。
 
 `file://` 下 WebGL 在常见桌面浏览器里可以工作。若某个浏览器限制了本地文件的 WebGL 或 Pointer Lock（漫游时锁定鼠标），改用本地 http 打开同一文件即可。
 
@@ -55,22 +55,26 @@ bun build
 ```
 src/
   index.html                 页面与左侧转盘 HUD
-  main.ts                    入口：组装渲染器、场景和动画循环
-  styles/app.css             HUD 样式
+  main.ts                    入口：组装场景、HUD 和动画循环
   assets/                    favicon
-  config/                    尺寸、晨昏配方、机位、图层
+  config/                    尺寸、机位、图层；time/ 是各时段配方
   types/                     模式 / 时段 / 图层等联合类型
-  app/                       机位、晨昏、剖切盖板、漫游、HUD、热点
-  scene/geom/                几何与批量实例
-  scene/materials/           程序纹理与材质
-  scene/sky/                 天空与太阳
+  engine/                    WebGPU 渲染器、WebGL2 回退、后处理
+  geom/                      几何与批量实例
+  materials/                 程序纹理与材质
+  world/                     会话、晨昏灯光、剖切
+  features/                  机位、漫游、热点、图层可见性
   scene/house/               墙体、屋面、门窗、楼梯
   scene/furnish/             室内陈设
   scene/site/                场地、水庭、栈道、围栏、树木、邻里
+  scene/sky/                 天空与太阳
   scene/systems/             构造层：骨架、砌体、机电
+  ui/                        HUD、剖切面板、帮助、样式
 shots/                       实机截图，不打进运行时
 dist/                        bun build 产出的单文件 HTML（不提交）
 ```
+
+跨目录的内部导入使用 `@/`（`tsconfig` 的 `paths`，指向 `src/`）。同一目录里的文件仍用 `./`。
 
 开发与构建命令不变：`bun dev` 仍托管 `src/index.html`，`bun build` 仍输出 `dist/index.html`。
 

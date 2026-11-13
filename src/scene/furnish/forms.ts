@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export interface FormFlags {
+interface FormFlags {
   rotX?: number;
   rotY?: number;
   rotZ?: number;

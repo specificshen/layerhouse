@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { Y_GF_TOP, Y_L2_TOP } from "../../config";
-import { addBox, addCyl, registerMeshClip } from "../geom";
-import type { Materials } from "../materials";
-import type { HouseRecord, Well } from "../../types";
+import { Y_GF_TOP, Y_L2_TOP } from "@/config";
+import { addBox, addCyl, registerMeshClip } from "@/geom";
+import type { Materials } from "@/materials";
+import type { HouseRecord, Well } from "@/types";
 
 export function buildStairs(
   wallsGrp: THREE.Object3D,

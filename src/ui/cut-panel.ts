@@ -1,5 +1,5 @@
-import type { CutDir } from "../types";
-import { isCutDir } from "../types";
+import type { CutDir } from "@/types";
+import { isCutDir } from "@/types";
 import { mustEl, setActive } from "./dom";
 
 export type CutSliderFrom = "slider" | "meters";

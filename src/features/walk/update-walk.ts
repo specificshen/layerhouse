@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { EYE } from "../../config";
-import { heightAt } from "../../scene/house";
-import type { Session } from "../../app/session";
+import { EYE } from "@/config";
+import { heightAt } from "@/scene/house";
+import type { Session } from "@/world/session";
 import { applyWalkLook } from "./apply-walk-look";
 import { resolveCollision } from "./resolve-collision";
 

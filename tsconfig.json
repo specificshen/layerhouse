@@ -15,7 +15,10 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": []
+    "types": [],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts"]
 }

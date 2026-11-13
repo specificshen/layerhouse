@@ -1,11 +1,44 @@
 import * as THREE from "three";
 import type { CubeRenderTarget } from "three/webgpu";
-import { ROOF_LIFT, TOD } from "../config";
-import { setGrassColor, setLampIntensity } from "../scene/materials";
-import { applySky, placeSun } from "../scene/sky";
-import { setNeighborGlow } from "../scene/site/neighbors";
-import type { TimeId } from "../types";
+import { ROOF_LIFT, TOD } from "@/config";
+import { setGrassColor, setLampIntensity } from "@/materials";
+import { applySky, placeSun } from "@/scene/sky";
+import { setNeighborGlow } from "@/scene/site/neighbors";
+import type { TimeId } from "@/types";
 import type { Session } from "./session";
+
+/**
+ * Fog density before the first `applyTime`. Dusk color and the other lights come from
+ * `TOD.dusk`; this density is the pre-frame value and is replaced before anything draws.
+ */
+const INITIAL_FOG_DENSITY = 0.018;
+
+export function createDuskLights(scene: THREE.Scene) {
+  const dusk = TOD.dusk;
+  scene.fog = new THREE.FogExp2(dusk.fog, INITIAL_FOG_DENSITY);
+  const hemi = new THREE.HemisphereLight(dusk.hemiSky, dusk.hemiGround, dusk.hemi);
+  scene.add(hemi);
+  const amb = new THREE.AmbientLight(dusk.amb, dusk.ambInt);
+  scene.add(amb);
+  const sun = new THREE.DirectionalLight(dusk.sunColorDir, dusk.sunInt);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 80;
+  sun.shadow.camera.left = -28;
+  sun.shadow.camera.right = 28;
+  sun.shadow.camera.top = 24;
+  sun.shadow.camera.bottom = -24;
+  sun.shadow.bias = -0.00025;
+  sun.shadow.normalBias = 0.03;
+  scene.add(sun);
+  scene.add(sun.target);
+  sun.target.position.set(0, 0, -1);
+  const fill = new THREE.DirectionalLight(dusk.fillColor, dusk.fillInt);
+  fill.position.set(8, 10, -14);
+  scene.add(fill);
+  return { hemi, amb, sun, fill };
+}
 
 const ROOM_BOUNCE: ReadonlyArray<readonly [number, number, number]> = [
   [-4.2, 1.65, 1.8],

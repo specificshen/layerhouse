@@ -1,4 +1,4 @@
-import type { Session } from "../../app/session";
+import type { Session } from "@/world/session";
 
 export function tickCamera(s: Session, dt: number) {
   if (!s.cam.active || s.walk.on) return;

@@ -1,6 +1,6 @@
 import type * as THREE from "three";
-import { WATER_EDGE } from "../../config";
-import type { Session } from "../../app/session";
+import { WATER_EDGE } from "@/config";
+import type { Session } from "@/world/session";
 
 export function resolveCollision(s: Session, p: THREE.Vector3, r = 0.28) {
   for (const c of s.rec.collisions) {

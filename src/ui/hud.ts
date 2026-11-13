@@ -1,6 +1,6 @@
-import { LAYERS } from "../config";
-import type { CutDir, LayerId, TimeId, ViewMode } from "../types";
-import { isTimeId, isViewMode } from "../types";
+import { LAYERS } from "@/config";
+import type { CutDir, LayerId, TimeId, ViewMode } from "@/types";
+import { isTimeId, isViewMode } from "@/types";
 import { bindCutPanel } from "./cut-panel";
 import { mustEl, setActive } from "./dom";
 

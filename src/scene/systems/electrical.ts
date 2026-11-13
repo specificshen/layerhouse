@@ -1,8 +1,8 @@
 import type * as THREE from "three";
-import { Y_GF_CEIL, Y_GF_TOP, Y_L2_CEIL, Y_L2_TOP } from "../../config";
-import type { HouseRecord } from "../../types";
-import { addBox, BoxBatch, CylBatch, runAlong } from "../geom";
-import type { Materials } from "../materials";
+import { Y_GF_CEIL, Y_GF_TOP, Y_L2_CEIL, Y_L2_TOP } from "@/config";
+import type { HouseRecord } from "@/types";
+import { addBox, BoxBatch, CylBatch, runAlong } from "@/geom";
+import type { Materials } from "@/materials";
 import { wirePath } from "./wire-path";
 
 export function electrical(parent: THREE.Object3D, rec: HouseRecord, mats: Materials) {

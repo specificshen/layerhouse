@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import type { HouseRecord } from "../../types";
-import { addBox } from "../geom";
-import type { Materials } from "../materials";
+import type { HouseRecord } from "@/types";
+import { addBox } from "@/geom";
+import type { Materials } from "@/materials";
 
 /** Greens stay in the same family as the site palette, with enough spread to model a crown. */
 const PINE_DEEP = new THREE.Color(0x132e1a);

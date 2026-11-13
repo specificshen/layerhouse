@@ -1,4 +1,4 @@
-import type { Session } from "../../app/session";
+import type { Session } from "@/world/session";
 
 export function updateDoors(s: Session, dt: number) {
   const swing = Math.PI * 0.72;

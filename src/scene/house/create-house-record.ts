@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { HouseGroups, HouseRecord, RoofMeta, Wall } from "../../types";
+import type { HouseGroups, HouseRecord, RoofMeta, Wall } from "@/types";
 
 function named(name: string) {
   const group = new THREE.Group();

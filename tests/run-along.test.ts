@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { runAlong } from "../src/scene/geom";
+import { runAlong } from "@/geom";
 
 describe("runAlong", () => {
   test("includes both ends when the span divides evenly", () => {

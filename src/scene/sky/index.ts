@@ -19,8 +19,8 @@ import {
 } from "three/tsl";
 import type { Node } from "three/webgpu";
 import { MeshBasicNodeMaterial } from "three/webgpu";
-import { TOD } from "../../config";
-import type { TimeId } from "../../types";
+import { TOD } from "@/config";
+import type { TimeId } from "@/types";
 
 const uTop = uniform(new THREE.Color());
 const uHorizon = uniform(new THREE.Color());

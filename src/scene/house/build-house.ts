@@ -1,7 +1,7 @@
-import { MAIN } from "../../config";
-import type { HouseRecord } from "../../types";
-import { buildWall } from "../geom";
-import type { Materials } from "../materials";
+import { MAIN } from "@/config";
+import type { HouseRecord } from "@/types";
+import { buildWall } from "@/geom";
+import type { Materials } from "@/materials";
 import { baseboards } from "./baseboards";
 import { ceilings } from "./ceilings";
 import { createHouseRecord } from "./create-house-record";

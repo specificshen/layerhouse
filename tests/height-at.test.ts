@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { heightAt } from "../src/scene/house";
-import type { FloorPad, HouseRecord, StairRun } from "../src/types";
+import { heightAt } from "@/scene/house";
+import type { FloorPad, HouseRecord, StairRun } from "@/types";
 
 function record(floors: FloorPad[], stairs: StairRun[] = []): HouseRecord {
   return { floors, stairs } as HouseRecord;

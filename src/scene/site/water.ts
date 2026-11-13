@@ -18,7 +18,7 @@ import {
 } from "three/tsl";
 import { MeshPhysicalNodeMaterial } from "three/webgpu";
 import type { Object3D } from "three";
-import { QUALITY } from "../../config";
+import { QUALITY } from "@/config";
 
 function rippleHeight(scale: number, speed: number) {
   return sin(positionWorld.x.mul(scale).add(time.mul(speed)))

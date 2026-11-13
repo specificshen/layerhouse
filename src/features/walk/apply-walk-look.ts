@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { Session } from "../../app/session";
+import type { Session } from "@/world/session";
 
 export function applyWalkLook(s: Session) {
   const cy = Math.cos(s.walk.pitch);

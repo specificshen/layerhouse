@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { CARPORT, COURT, LOT, MAIN, POOL, WATER_EDGE } from "../../config";
-import type { HouseGroups, HouseRecord } from "../../types";
-import { addBox, addCyl } from "../geom";
-import type { Materials } from "../materials";
+import { CARPORT, COURT, LOT, MAIN, POOL, WATER_EDGE } from "@/config";
+import type { HouseGroups, HouseRecord } from "@/types";
+import { addBox, addCyl } from "@/geom";
+import type { Materials } from "@/materials";
 import { buildCarport, buildDock, buildFence, buildLotDressing } from "./hardscape";
 import { maple, pine, planter, shrub } from "./trees";
 import { createCanalMaterial, createPoolWater } from "./water";
