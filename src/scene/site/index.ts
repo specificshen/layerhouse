@@ -271,8 +271,10 @@ export function buildLandscape(groups: HouseGroups, mats: Materials, rec: HouseR
   planter(land, mats, rec, 1.4, 7.6, 0.9, 0.6);
 
   // Trees — pines + maples, no palms
-  pine(land, mats, 8.6, 7.8, 1.15, 5.4);
-  pine(land, mats, 11.2, 4.2, 0.95, 4.6);
+  // Shifted off the carport so the trunk is not in front of the roof.
+  pine(land, mats, 7.8, 8.6, 1.15, 5.4);
+  // East of the roof. 11.2 sat under it and the trunk grew through the slab.
+  pine(land, mats, 12.6, 4.2, 0.95, 4.6);
   pine(land, mats, -10.6, 2.2, 1.2, 5.8);
   pine(land, mats, -11.4, -8.6, 1.05, 5.0);
   pine(land, mats, 7.8, -12.6, 1.1, 5.2);
