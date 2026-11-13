@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { Y_GF_TOP, Y_GF_CEIL, Y_L2_TOP, Y_L2_CEIL } from "./config";
-import { addBox, addCyl, addSphere } from "./geom";
-import type { Materials } from "./materials";
-import type { HouseGroups, HouseRecord } from "./types";
+import { Y_GF_TOP, Y_GF_CEIL, Y_L2_TOP, Y_L2_CEIL } from "../../config";
+import { addBox, addCyl, addSphere } from "../geom";
+import type { Materials } from "../materials";
+import type { HouseGroups, HouseRecord } from "../../types";
 
 type LampKind = "pendant" | "recessed" | "sconce" | "floor";
 
@@ -149,12 +149,20 @@ function bed(
   const g = new THREE.Group();
   g.position.set(x, y, z);
   g.rotation.y = rotY;
-  addBox(g, w + 0.08, 0.22, d + 0.08, 0, 0.16, 0, mats.woodDark, rec, {});
-  addBox(g, w, 0.28, d, 0, 0.38, 0, mats.linen, rec, {});
-  addBox(g, w, 0.06, d * 0.7, 0, 0.54, 0.15, mats.linen, rec, {});
-  addBox(g, w + 0.08, 0.7, 0.08, 0, 0.55, -d / 2, mats.woodDark, rec, {});
-  addBox(g, 0.48, 0.16, 0.32, -w * 0.22, 0.62, -d / 2 + 0.28, mats.linen, rec, {});
-  addBox(g, 0.48, 0.16, 0.32, w * 0.22, 0.62, -d / 2 + 0.28, mats.linen, rec, {});
+  addBox(g, w + 0.1, 0.28, d + 0.08, 0, 0.18, 0, mats.woodDark, rec, {});
+  addBox(g, w + 0.06, 0.72, 0.08, 0, 0.58, -d / 2, mats.woodDark, rec, {});
+  const duvet = mats.linen.clone();
+  duvet.color.setHex(king ? 0xb7c4b4 : 0xc4b0a0);
+  addBox(g, w - 0.06, 0.16, d - 0.08, 0, 0.4, 0.02, mats.linen, rec, {});
+  addBox(g, w - 0.08, 0.08, d * 0.72, 0, 0.5, 0.12, duvet, rec, {});
+  addBox(g, w * 0.55, 0.05, 0.42, 0, 0.54, d * 0.28, mats.cushionC, rec, { noCast: true });
+  const pillow = mats.linen.clone();
+  pillow.color.setHex(0xf4efe6);
+  addBox(g, 0.52, 0.14, 0.34, -w * 0.22, 0.58, -d / 2 + 0.32, pillow, rec, {});
+  addBox(g, 0.52, 0.14, 0.34, w * 0.22, 0.58, -d / 2 + 0.32, pillow, rec, {});
+  if (king) {
+    addBox(g, 0.42, 0.1, 0.28, 0, 0.64, -d / 2 + 0.46, pillow, rec, { noCast: true });
+  }
   parent.add(g);
 }
 
@@ -366,9 +374,48 @@ function bookcase(
   g.position.set(x, y, z);
   g.rotation.y = rotY;
   addBox(g, w, h, 0.32, 0, h / 2, 0, mats.woodMid, rec, {});
+  const bookColors = [0x6a3a32, 0x2e3a48, 0x8a7048, 0x3d4a3a, 0x5a4038];
   for (let i = 1; i < 4; i++) {
-    addBox(g, w - 0.06, 0.03, 0.28, 0, (i * h) / 4, 0.01, mats.woodDark, rec, { noCast: true });
+    const shelfY = (i * h) / 4;
+    addBox(g, w - 0.06, 0.03, 0.28, 0, shelfY, 0.01, mats.woodDark, rec, { noCast: true });
+    let xCursor = -w / 2 + 0.08;
+    let bi = 0;
+    while (xCursor < w / 2 - 0.12 && bi < 8) {
+      const bw = 0.05 + ((i + bi) % 3) * 0.015;
+      const bh = 0.22 + ((bi + i) % 3) * 0.03;
+      const cover = mats.fabric.clone();
+      cover.color.setHex(bookColors[(i + bi) % bookColors.length]!);
+      cover.map = null;
+      addBox(g, bw, bh, 0.2, xCursor + bw / 2, shelfY + 0.02 + bh / 2, 0.02, cover, rec, {
+        noCast: true,
+      });
+      xCursor += bw + 0.012;
+      bi += 1;
+    }
   }
+  parent.add(g);
+}
+
+function art(
+  parent: THREE.Object3D,
+  mats: Materials,
+  rec: HouseRecord,
+  x: number,
+  y: number,
+  z: number,
+  rotY: number,
+  w: number,
+  h: number,
+  color: number,
+) {
+  const g = new THREE.Group();
+  g.position.set(x, y, z);
+  g.rotation.y = rotY;
+  addBox(g, w + 0.06, h + 0.06, 0.03, 0, 0, 0, mats.woodDark, rec, { noCast: true });
+  const paint = mats.linen.clone();
+  paint.color.setHex(color);
+  paint.map = null;
+  addBox(g, w, h, 0.012, 0, 0, 0.02, paint, rec, { noCast: true, noShadow: true });
   parent.add(g);
 }
 
@@ -388,6 +435,8 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   lamp(f, rec, -5.6, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -3.0, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -6.3, y0, 4.6, mats, "floor", 0.55);
+  art(f, mats, rec, -6.95, y0 + 1.55, 1.7, Math.PI / 2, 1.15, 0.78, 0x8d9a86);
+  art(f, mats, rec, -5.4, y0 + 1.45, 0.35, 0, 0.55, 0.7, 0xc4a080);
 
   // —— Dining / kitchen (east main) ——
   table(f, mats, rec, 4.3, y0, 3.6, 1.8, 0.9, 0.75, mats.woodMid);
@@ -430,6 +479,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   armchair(f, mats, rec, -2.3, y0, -6.5, -Math.PI / 2);
   lamp(f, rec, -4.4, 2.92, -8.0, mats, "recessed", 0.6);
   lamp(f, rec, -5.4, y0 + 0.55, -9.15, mats, "sconce", 0.3);
+  art(f, mats, rec, -4.5, y0 + 1.5, -10.25, 0, 0.9, 0.6, 0x6e7c88);
 
   // —— Guest bath ——
   vanity(f, mats, rec, -6.4, y0, -3.6, Math.PI / 2, 1.0);
@@ -447,6 +497,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   lamp(f, rec, -2.4, Y_L2_CEIL - 0.02, 1.3, mats, "recessed", 0.8);
   lamp(f, rec, -5.5, Y_L2_CEIL - 0.02, 4.2, mats, "recessed", 0.5);
   lamp(f, rec, -3.5, y2 + 0.55, 0.2, mats, "sconce", 0.3);
+  art(f, mats, rec, -6.9, y2 + 1.55, 1.5, Math.PI / 2, 0.85, 1.05, 0xa89078);
 
   // Master bath
   vanity(f, mats, rec, -6.4, y2, 4.7, Math.PI / 2, 1.3);
@@ -467,6 +518,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   armchair(f, mats, rec, 3.5, y2, 5.0, Math.PI * 0.8);
   lamp(f, rec, 5.0, Y_L2_CEIL - 0.02, 1.0, mats, "recessed", 0.7);
   lamp(f, rec, 4.8, Y_L2_CEIL - 0.02, 4.6, mats, "recessed", 0.5);
+  art(f, mats, rec, 4.6, y2 + 1.6, 5.95, Math.PI, 1.05, 0.72, 0x7f8c78);
 
   // hallway lamps
   lamp(f, rec, 1.5, Y_L2_CEIL - 0.02, -0.6, mats, "recessed", 0.5);

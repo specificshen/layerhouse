@@ -76,6 +76,15 @@ export interface ClipBox {
   max: THREE.Vector3;
 }
 
+/** Oriented box used for section caps on rotated pieces (roof slopes, rakes, rails). */
+export interface OrientedClip {
+  center: THREE.Vector3;
+  half: THREE.Vector3;
+  quat: THREE.Quaternion;
+  /** Added to center.y while the rigid roof is lifted. */
+  lifts: boolean;
+}
+
 export interface CollisionBox {
   x0: number;
   x1: number;
@@ -172,6 +181,9 @@ export type HouseGroups = Record<LayerId, THREE.Group>;
 
 export interface HouseRecord {
   clipBoxes: ClipBox[];
+  /** Clip boxes parented to the roof group; section caps follow `roofGroup.position.y`. */
+  roofClipBoxes: ClipBox[];
+  orientedClips: OrientedClip[];
   collisions: CollisionBox[];
   floors: FloorPad[];
   stairs: StairRun[];

@@ -1,6 +1,6 @@
 /** 层宅 / Layer House — original courtyard house dimensions (meters). */
 
-import type { LayerId, OrbitPreset, TimeId, TimeRecipe, ViewMode, WalkPreset } from "./types";
+import type { LayerId, OrbitPreset, TimeId, TimeRecipe, ViewMode, WalkPreset } from "../types";
 
 export const TITLE = "层宅";
 export const SUBTITLE = "Layer House";
@@ -49,7 +49,8 @@ export const ROOF = {
   wingEaveNorth: 3.35,
 };
 
-export const ROOF_LIFT = 3.6;
+/** Clearance so a street 3/4 still sees under the gable into furnished rooms. */
+export const ROOF_LIFT = 5.6;
 
 export const LAYERS: ReadonlyArray<{ id: LayerId; en: string; zh: string }> = [
   { id: "framing", en: "Framing & supports", zh: "结构骨架" },
@@ -84,9 +85,9 @@ export const TIMES: ReadonlyArray<{ id: TimeId; en: string; zh: string }> = [
 /** Lighting / sky recipes for each discrete time of day. */
 export const TOD = {
   day: {
-    top: 0xc9d8e8,
-    horizon: 0xd7e2ec,
-    bottom: 0xb8c6b0,
+    top: 0x7eafd6,
+    horizon: 0xd4e3ee,
+    bottom: 0xa9c09a,
     sunColor: 0xfff4de,
     sunDir: [0.35, 0.82, 0.42],
     sunSize: 0.999,
@@ -165,37 +166,39 @@ export const TOD = {
     shadow: 0.88,
   },
   night: {
-    top: 0x0c1430,
-    horizon: 0x243056,
-    bottom: 0x161c32,
+    top: 0x101838,
+    horizon: 0x2c3a62,
+    bottom: 0x1a2238,
     sunColor: 0xd0dcff,
     sunDir: [0.2, 0.65, -0.5],
     sunSize: 0.9994,
-    glow: 0.28,
-    hemiSky: 0x2a3860,
-    hemiGround: 0x16241c,
-    hemi: 0.42,
-    amb: 0x1c2438,
-    ambInt: 0.22,
-    sunInt: 0.42,
-    sunColorDir: 0xc0ccee,
-    fillInt: 0.22,
-    fillColor: 0x4a5a88,
-    exposure: 0.86,
-    fog: 0x14182e,
-    fogDen: 0.008,
+    glow: 0.34,
+    hemiSky: 0x344878,
+    hemiGround: 0x1a2c22,
+    hemi: 0.58,
+    amb: 0x243044,
+    ambInt: 0.36,
+    sunInt: 0.52,
+    sunColorDir: 0xc8d4f2,
+    fillInt: 0.32,
+    fillColor: 0x5a6a98,
+    exposure: 0.94,
+    fog: 0x161c34,
+    fogDen: 0.0055,
     lamps: 1,
     windowWarm: 1,
     poolGlow: 1,
-    waterTint: 0x1a2438,
-    grass: 0x1c2c20,
-    shadow: 0.48,
+    waterTint: 0x1a3040,
+    grass: 0x243628,
+    shadow: 0.42,
   },
 } as const satisfies Record<TimeId, TimeRecipe>;
 
 export const CAM = {
-  exterior: { pos: [18.8, 11.6, 16.2], target: [0.2, 2.2, -1.6] },
-  exploded: { pos: [12.8, 17.2, -12.4], target: [0.5, 2.8, -1.8] },
+  exterior: { pos: [16.6, 8.8, 15.4], target: [0.6, 2.5, -1.4] },
+  exploded: { pos: [9.6, 15.4, -16.2], target: [0.8, 2.5, -2.6] },
+  /** Street 3/4 dollhouse frame. Not a dial mode; orbit or `snapCam` lands here. */
+  explodedStreet: { pos: [4.2, 13.2, 9.4], target: [-2.8, 2.4, -2.2] },
   cut: { pos: [6.5, 18.5, 10.5], target: [0.0, 1.6, -2.0] },
   cutSide: { pos: [1.2, 8.6, 19.5], target: [0.4, 3.1, 0.2] },
   cutFront: { pos: [0.8, 9.8, 22.5], target: [0.0, 3.0, -1.5] },
@@ -204,6 +207,7 @@ export const CAM = {
 } as const satisfies {
   exterior: OrbitPreset;
   exploded: OrbitPreset;
+  explodedStreet: OrbitPreset;
   cut: OrbitPreset;
   cutSide: OrbitPreset;
   cutFront: OrbitPreset;

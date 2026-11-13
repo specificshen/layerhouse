@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { TOD } from "./config";
-import type { TimeId } from "./types";
+import { TOD } from "../../config";
+import type { TimeId } from "../../types";
 
 const vert = /* glsl */ `
   varying vec3 vDir;
@@ -22,20 +22,27 @@ const frag = /* glsl */ `
   uniform vec3 uSunDir;
   uniform float uGlow;
   uniform float uSunSharp;
+  uniform float uCloud;
   void main() {
     vec3 dir = normalize(vDir);
     float h = dir.y;
     vec3 col = mix(uHorizon, uTop, smoothstep(0.0, 0.72, max(h, 0.0)));
     col = mix(uBottom, col, smoothstep(-0.22, 0.06, h));
-    // gentle horizon bloom
     col += uHorizon * 0.18 * exp(-abs(h) * 8.0);
+    vec2 cuv = dir.xz / max(h + 0.35, 0.08);
+    float c1 = sin(cuv.x * 1.6 + cuv.y * 0.55);
+    float c2 = sin(cuv.x * 3.2 - cuv.y * 2.3);
+    float c3 = sin((cuv.x + cuv.y) * 0.8);
+    float clouds = smoothstep(0.2, 0.85, c1 * 0.5 + c2 * 0.28 + c3 * 0.22 + 0.12);
+    clouds *= smoothstep(0.02, 0.32, h);
+    vec3 cloudCol = mix(uHorizon, vec3(1.0), 0.62);
+    col = mix(col, cloudCol, clouds * uCloud * 0.5);
     vec3 sunD = normalize(uSunDir);
     float mu = max(dot(dir, sunD), 0.0);
     float disc = pow(mu, uSunSharp);
     float glow = pow(mu, 12.0) * uGlow;
     float haze = pow(mu, 4.0) * uGlow * 0.35;
     col += uSunColor * (disc * 2.6 + glow + haze);
-    // faint ground bounce near horizon
     if (h < 0.0) {
       col = mix(col, uBottom, smoothstep(0.0, -0.4, h) * 0.35);
     }
@@ -60,6 +67,7 @@ export function createSky(): SkyHandle {
       uSunDir: { value: new THREE.Vector3() },
       uGlow: { value: 1 },
       uSunSharp: { value: 256 },
+      uCloud: { value: 0.4 },
     },
     vertexShader: vert,
     fragmentShader: frag,
@@ -83,6 +91,7 @@ export function applySky(sky: SkyHandle, timeId: TimeId) {
     uSunDir: { value: THREE.Vector3 };
     uGlow: { value: number };
     uSunSharp: { value: number };
+    uCloud: { value: number };
   };
   u.uTop.value.setHex(t.top);
   u.uHorizon.value.setHex(t.horizon);
@@ -91,6 +100,9 @@ export function applySky(sky: SkyHandle, timeId: TimeId) {
   u.uSunDir.value.set(t.sunDir[0], t.sunDir[1], t.sunDir[2]).normalize();
   u.uGlow.value = t.glow;
   u.uSunSharp.value = timeId === "night" ? 800 : timeId === "day" ? 400 : 180;
+  const cloud =
+    timeId === "day" ? 0.28 : timeId === "dawn" ? 0.32 : timeId === "dusk" ? 0.18 : 0.05;
+  u.uCloud.value = cloud;
 }
 
 export function createSunDisc(): THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial> {

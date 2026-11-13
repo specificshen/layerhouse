@@ -1,5 +1,23 @@
 import * as THREE from "three";
-import type { HouseRecord } from "./types";
+import type { HouseRecord } from "../../types";
+
+export function registerMeshClip(rec: HouseRecord, mesh: THREE.Object3D, lifts = false) {
+  mesh.updateWorldMatrix(true, false);
+  const center = new THREE.Vector3();
+  const quat = new THREE.Quaternion();
+  const scale = new THREE.Vector3();
+  mesh.matrixWorld.decompose(center, quat, scale);
+  rec.orientedClips.push({
+    center,
+    quat,
+    half: new THREE.Vector3(
+      Math.abs(scale.x) * 0.5,
+      Math.abs(scale.y) * 0.5,
+      Math.abs(scale.z) * 0.5,
+    ),
+    lifts,
+  });
+}
 
 export interface MeshFlags {
   noShadow?: boolean;
@@ -10,6 +28,8 @@ export interface MeshFlags {
   rotZ?: number;
   clip?: boolean;
   collide?: boolean;
+  /** Section cap follows the rigid roof lift. */
+  lifts?: boolean;
   seg?: 4 | 6 | 8;
   low?: boolean;
 }
@@ -106,18 +126,20 @@ export function addBox(
   }
   if (flags.noCast) m.castShadow = false;
   if (flags.name) m.name = flags.name;
-  if (flags.rotY) m.rotation.y = flags.rotY;
-  if (flags.rotX) m.rotation.x = flags.rotX;
-  if (flags.rotZ) m.rotation.z = flags.rotZ;
+  if (flags.rotY !== undefined) m.rotation.y = flags.rotY;
+  if (flags.rotX !== undefined) m.rotation.x = flags.rotX;
+  if (flags.rotZ !== undefined) m.rotation.z = flags.rotZ;
   parent.add(m);
   const hx = sx / 2,
     hy = sy / 2,
     hz = sz / 2;
   if (flags.clip && rec) {
-    rec.clipBoxes.push({
+    const box = {
       min: new THREE.Vector3(x - hx, y - hy, z - hz),
       max: new THREE.Vector3(x + hx, y + hy, z + hz),
-    });
+    };
+    if (flags.lifts) rec.roofClipBoxes.push(box);
+    else rec.clipBoxes.push(box);
   }
   if (flags.collide && rec) {
     rec.collisions.push({

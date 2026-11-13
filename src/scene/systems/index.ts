@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { MAIN, WING, Y_GF_TOP, Y_GF_CEIL, Y_L2_TOP, Y_L2_CEIL, Y_L2_WALL_TOP } from "./config";
-import { addBox, addCyl, buildWall, BoxBatch, CylBatch, runAlong, solidRects } from "./geom";
-import type { Materials } from "./materials";
-import type { HouseGroups, HouseRecord, Wall } from "./types";
+import { MAIN, WING, Y_GF_TOP, Y_GF_CEIL, Y_L2_TOP, Y_L2_CEIL, Y_L2_WALL_TOP } from "../../config";
+import { addBox, addCyl, buildWall, BoxBatch, CylBatch, runAlong, solidRects } from "../geom";
+import type { Materials } from "../materials";
+import type { HouseGroups, HouseRecord, Wall } from "../../types";
 
 export function buildSystems(groups: HouseGroups, mats: Materials, rec: HouseRecord) {
   buildMasonryShell(groups.masonry, rec.wallsData, mats, rec);
