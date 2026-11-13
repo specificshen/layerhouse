@@ -21,6 +21,6 @@ export {
   Y_L2_WALL_TOP,
 } from "./house";
 export { LAYERS, STATS, SUBTITLE, TIMES, TITLE, VIEW_MODES } from "./labels";
-export { ROOF_LIFT } from "./render";
+export { QUALITY, ROOF_LIFT } from "./render";
 export { CARPORT, LOT, WATER_EDGE } from "./site";
 export { TOD } from "./time-of-day";

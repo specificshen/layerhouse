@@ -7,6 +7,17 @@ import type {
   CanvasTexture,
 } from "three";
 
+/** Deterministic sequence so canvas textures match across screenshots. */
+function makeRand(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+const rand = makeRand(0x1a7ec0de);
+
 function canvas(
   w: number,
   h: number,
@@ -34,7 +45,7 @@ function noise(ctx: CanvasRenderingContext2D, w: number, h: number, a: number, s
       const n =
         Math.sin(x * 0.11 * scale + y * 0.07 * scale) * 0.5 +
         Math.sin(x * 0.03 * scale + y * 0.19 * scale) * 0.3 +
-        (Math.random() - 0.5);
+        (rand() - 0.5);
       const i = (y * w + x) * 4;
       const k = n * a;
       d[i] = Math.max(0, Math.min(255, (d[i] ?? 0) + k));
@@ -50,11 +61,11 @@ export function createTextures() {
     ctx.fillStyle = "#d8cfc2";
     ctx.fillRect(0, 0, w, h);
     for (let i = 0; i < 9000; i++) {
-      const x = Math.random() * w;
-      const y = Math.random() * h;
-      const v = 190 + Math.random() * 40;
-      ctx.fillStyle = `rgba(${v},${v - 8},${v - 18},${0.08 + Math.random() * 0.12})`;
-      ctx.fillRect(x, y, 1 + Math.random() * 3, 1 + Math.random() * 2);
+      const x = rand() * w;
+      const y = rand() * h;
+      const v = 190 + rand() * 40;
+      ctx.fillStyle = `rgba(${v},${v - 8},${v - 18},${0.08 + rand() * 0.12})`;
+      ctx.fillRect(x, y, 1 + rand() * 3, 1 + rand() * 2);
     }
     noise(ctx, w, h, 10, 1);
   });
@@ -65,8 +76,8 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     noise(ctx, w, h, 28, 2);
     for (let i = 0; i < 4000; i++) {
-      ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.15})`;
-      ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+      ctx.fillStyle = `rgba(255,255,255,${rand() * 0.15})`;
+      ctx.fillRect(rand() * w, rand() * h, 2, 2);
     }
   });
   stuccoRough.colorSpace = THREE.NoColorSpace;
@@ -77,7 +88,7 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     const plank = 42;
     for (let x = 0; x < w; x += plank) {
-      const shade = 48 + Math.random() * 22;
+      const shade = 48 + rand() * 22;
       ctx.fillStyle = `rgb(${shade + 8},${shade},${shade - 6})`;
       ctx.fillRect(x + 1, 0, plank - 2, h);
       ctx.strokeStyle = "rgba(0,0,0,0.45)";
@@ -92,9 +103,9 @@ export function createTextures() {
       ctx.lineTo(x + 2, h);
       ctx.stroke();
       for (let k = 0; k < 8; k++) {
-        ctx.strokeStyle = `rgba(0,0,0,${0.04 + Math.random() * 0.06})`;
+        ctx.strokeStyle = `rgba(0,0,0,${0.04 + rand() * 0.06})`;
         ctx.beginPath();
-        const ox = x + 6 + Math.random() * (plank - 12);
+        const ox = x + 6 + rand() * (plank - 12);
         ctx.moveTo(ox, 0);
         for (let y = 0; y < h; y += 16) ctx.lineTo(ox + Math.sin(y * 0.04) * 1.2, y);
         ctx.stroke();
@@ -108,26 +119,26 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     const plankH = 72;
     for (let y = 0; y < h; y += plankH) {
-      const r = 118 + Math.random() * 36;
-      const g = 68 + Math.random() * 22;
-      const b = 34 + Math.random() * 14;
+      const r = 118 + rand() * 36;
+      const g = 68 + rand() * 22;
+      const b = 34 + rand() * 14;
       ctx.fillStyle = `rgb(${r},${g},${b})`;
       ctx.fillRect(0, y + 2, w, plankH - 4);
       ctx.fillStyle = "rgba(28,12,4,0.55)";
       ctx.fillRect(0, y, w, 3);
       for (let k = 0; k < 18; k++) {
-        ctx.strokeStyle = `rgba(48,22,8,${0.12 + Math.random() * 0.16})`;
-        ctx.lineWidth = 1 + Math.random();
+        ctx.strokeStyle = `rgba(48,22,8,${0.12 + rand() * 0.16})`;
+        ctx.lineWidth = 1 + rand();
         ctx.beginPath();
-        const oy = y + 8 + Math.random() * (plankH - 16);
+        const oy = y + 8 + rand() * (plankH - 16);
         ctx.moveTo(0, oy);
         for (let x = 0; x < w; x += 16) ctx.lineTo(x, oy + Math.sin(x * 0.02 + k) * 2.2);
         ctx.stroke();
       }
-      if (Math.random() > 0.45) {
+      if (rand() > 0.45) {
         ctx.strokeStyle = "rgba(90,50,24,0.25)";
         ctx.beginPath();
-        ctx.moveTo(Math.random() * w, y + 6);
+        ctx.moveTo(rand() * w, y + 6);
         ctx.bezierCurveTo(w * 0.4, y + 20, w * 0.7, y + plankH - 20, w, y + plankH * 0.6);
         ctx.stroke();
       }
@@ -168,7 +179,7 @@ export function createTextures() {
     for (let y = 0, row = 0; y < h; y += bh, row++) {
       const off = row % 2 ? bw / 2 : 0;
       for (let x = -bw; x < w; x += bw) {
-        const v = 92 + Math.random() * 28;
+        const v = 92 + rand() * 28;
         ctx.fillStyle = `rgb(${v + 6},${v},${v - 8})`;
         ctx.fillRect(x + off + 2, y + 2, bw - 4, bh - 4);
         ctx.strokeStyle = "rgba(20,14,10,0.45)";
@@ -184,12 +195,12 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     // Soft, large-scale mottling only — no 1px dots or tight tiling grid.
     for (let i = 0; i < 48; i++) {
-      const x = Math.random() * w;
-      const y = Math.random() * h;
-      const r = 80 + Math.random() * 220;
+      const x = rand() * w;
+      const y = rand() * h;
+      const r = 80 + rand() * 220;
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      const lift = (Math.random() - 0.5) * 18;
-      const a = 0.07 + Math.random() * 0.08;
+      const lift = (rand() - 0.5) * 18;
+      const a = 0.07 + rand() * 0.08;
       const cr = 68 + lift,
         cg = 108 + lift,
         cb = 56 + lift;
@@ -207,8 +218,8 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     noise(ctx, w, h, 16, 2);
     for (let i = 0; i < 2000; i++) {
-      ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.05})`;
-      ctx.fillRect(Math.random() * w, Math.random() * h, 1, 1);
+      ctx.fillStyle = `rgba(255,255,255,${rand() * 0.05})`;
+      ctx.fillRect(rand() * w, rand() * h, 1, 1);
     }
   });
 
@@ -217,10 +228,10 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     noise(ctx, w, h, 14, 1);
     for (let i = 0; i < 40; i++) {
-      ctx.strokeStyle = `rgba(0,0,0,${0.03 + Math.random() * 0.05})`;
+      ctx.strokeStyle = `rgba(0,0,0,${0.03 + rand() * 0.05})`;
       ctx.beginPath();
-      ctx.moveTo(Math.random() * w, Math.random() * h);
-      ctx.lineTo(Math.random() * w, Math.random() * h);
+      ctx.moveTo(rand() * w, rand() * h);
+      ctx.lineTo(rand() * w, rand() * h);
       ctx.stroke();
     }
   });
@@ -244,7 +255,7 @@ export function createTextures() {
     ctx.fillRect(0, 0, w, h);
     const plank = 28;
     for (let x = 0; x < w; x += plank) {
-      const shade = 96 + Math.random() * 28;
+      const shade = 96 + rand() * 28;
       ctx.fillStyle = `rgb(${shade + 18},${shade},${shade - 16})`;
       ctx.fillRect(x + 1, 0, plank - 2, h);
       ctx.fillStyle = "rgba(30,16,8,0.35)";
@@ -377,7 +388,7 @@ export function createMaterials(textures: SceneTextures): Materials {
     color: COLORS.interior,
     roughness: 0.82,
     metalness: 0.0,
-    envMapIntensity: 0.25,
+    envMapIntensity: 0.48,
   });
 
   const floor = std({
