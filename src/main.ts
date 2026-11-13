@@ -4,14 +4,12 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { lerpCam, orbitPreset, tickCamera } from "./app/camera";
-import { mustEl } from "./app/dom";
-import { bindHud, closeHelp, isHelpOpen, syncModeChrome } from "./app/hud";
-import { createHotspots } from "./app/hotspots";
 import { applyTime, syncOpenRoofLighting } from "./app/lighting";
 import { CLIP_TARGETS, cutRange, enableClipping, updateCut } from "./app/section";
 import type { Session } from "./app/session";
-import { setHouseVisibility } from "./app/visibility";
+import { lerpCam, orbitPreset, tickCamera } from "./features/camera";
+import { createHotspots } from "./features/hotspots";
+import { setHouseVisibility } from "./features/layers/visibility";
 import {
   applyWalkLook,
   bindWalkPointer,
@@ -20,7 +18,11 @@ import {
   toggleNearestDoor,
   updateDoors,
   updateWalk,
-} from "./app/walk";
+} from "./features/walk";
+import { cutPanel } from "./ui/cut-panel";
+import { mustEl, setActive } from "./ui/dom";
+import { createHelpDialog } from "./ui/help-dialog";
+import { bindHud, syncModeChrome } from "./ui/hud";
 import { CAM, EYE, ROOF_LIFT } from "./config";
 import { furnishHouse } from "./scene/furnish";
 import { buildHouse, heightAt } from "./scene/house";
@@ -98,7 +100,7 @@ const textures = createTextures();
 const mats = createMaterials(textures);
 const rec = buildHouse(mats);
 furnishHouse(rec.groups, mats, rec);
-buildSite(scene, rec.groups, mats, rec);
+buildSite(rec.groups, mats, rec);
 buildLandscape(rec.groups, mats, rec);
 buildSystems(rec.groups, mats, rec);
 
@@ -107,9 +109,9 @@ houseRoot.name = "houseRoot";
 for (const group of Object.values(rec.groups)) houseRoot.add(group);
 scene.add(houseRoot);
 
-const neighbors = buildNeighbors(scene, mats, rec);
+const neighbors = buildNeighbors(mats, rec);
 scene.add(neighbors);
-const waterGrp = buildWater(scene, rec);
+const waterGrp = buildWater(rec);
 scene.add(waterGrp);
 
 const composer = new EffectComposer(renderer);
@@ -204,6 +206,8 @@ function setMode(next: ViewMode) {
   }
 }
 
+const help = createHelpDialog();
+
 bindHud({
   setMode,
   applyTime: (id) => applyTime(session, id),
@@ -217,7 +221,7 @@ bindHud({
     const range = cutRange(session);
     session.cutValue = range.def;
     const slider = mustEl<HTMLInputElement>("cut-slider");
-    slider.value = String(((session.cutValue - range.min) / (range.max - range.min)) * 100);
+    slider.value = String(cutPanel(range, session.cutValue, "meters"));
     updateCut(session);
     const key = dir === "side" ? "cutSide" : dir === "front" ? "cutFront" : "cut";
     lerpCam(session, CAM[key].pos, CAM[key].target, 0.8);
@@ -241,7 +245,7 @@ canvas.addEventListener("mousemove", (event) => hotspots.onMouseMove(event));
 window.addEventListener("keydown", (event) => {
   session.walk.keys[event.code] = true;
   if (event.code === "Escape") {
-    if (isHelpOpen()) closeHelp();
+    if (help.isOpen()) help.close();
     else if (session.mode === "walk") setMode(session.prevMode || "exploded");
   }
   if ((event.code === "KeyE" || event.code === "KeyF") && session.mode === "walk") {
@@ -300,22 +304,16 @@ const demo: DemoApi = {
   applyTime: (id) => applyTime(session, id),
   setLayer(id: LayerId) {
     session.xrayLayer = id;
-    document
-      .querySelectorAll<HTMLElement>("#layer-list button")
-      .forEach((button) => button.classList.toggle("active", button.dataset.layer === id));
+    setActive("#layer-list button", (button) => button.dataset.layer === id);
     setHouseVisibility(session);
   },
   setCut(dir: CutDir, value: number) {
     if (session.mode !== "cut") setMode("cut");
     session.cutDir = dir;
     session.cutValue = value;
-    document
-      .querySelectorAll<HTMLElement>("#cut-panel [data-cut]")
-      .forEach((button) => button.classList.toggle("active", button.dataset.cut === dir));
+    setActive("#cut-panel [data-cut]", (button) => button.dataset.cut === dir);
     const range = cutRange(session);
-    mustEl<HTMLInputElement>("cut-slider").value = String(
-      ((value - range.min) / (range.max - range.min)) * 100,
-    );
+    mustEl<HTMLInputElement>("cut-slider").value = String(cutPanel(range, value, "meters"));
     updateCut(session);
     const preset = CAM[dir === "side" ? "cutSide" : dir === "front" ? "cutFront" : "cut"];
     camera.position.set(preset.pos[0], preset.pos[1], preset.pos[2]);

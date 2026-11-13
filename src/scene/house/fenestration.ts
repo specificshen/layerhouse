@@ -4,7 +4,7 @@ import type { Materials } from "../materials";
 import type { DoorStyle, HouseRecord, Wall, WallAxis } from "../../types";
 
 /** Local X of the hinge. −1 is the −X side of the door group. */
-export function leafHingeAt(axis: WallAxis, hinge: "a0" | "a1"): -1 | 1 {
+function leafHingeAt(axis: WallAxis, hinge: "a0" | "a1"): -1 | 1 {
   if (axis === "z") return hinge === "a0" ? -1 : 1;
   return hinge === "a0" ? 1 : -1;
 }

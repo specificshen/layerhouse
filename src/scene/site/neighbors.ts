@@ -1,17 +1,12 @@
 import * as THREE from "three";
 import { addBox, addCyl } from "../geom";
 import type { Materials } from "../materials";
-import type { HouseRecord } from "../../types";
+import type { HouseRecord, Vec3 } from "../../types";
 
 type RoofKind = "gable" | "hip" | "shed";
 type WallFace = "px" | "nx" | "pz" | "nz";
-type Vec3 = readonly [number, number, number];
 
-export function buildNeighbors(
-  _scene: THREE.Scene,
-  mats: Materials,
-  rec: HouseRecord,
-): THREE.Group {
+export function buildNeighbors(mats: Materials, rec: HouseRecord): THREE.Group {
   const g = new THREE.Group();
   g.name = "neighbors";
   // North across the canal
