@@ -189,19 +189,13 @@ export function applyTime(s: Session, id: TimeId) {
   releaseTarget(s.envTarget);
   s.envTarget = null;
   s.scene.environment = null;
-  if (new URLSearchParams(location.search).get("noenv") !== "1") {
-    const tmp = new THREE.Scene();
-    const skyClone = s.sky.mesh.clone();
-    skyClone.material = s.sky.mat;
-    tmp.add(skyClone);
-    try {
-      const env = s.pmrem.fromScene(tmp, 0.06, 1, 600);
-      s.envTarget = env;
-      s.scene.environment = env.texture;
-    } catch (err) {
-      console.error("pmrem failed", err);
-    }
-  }
+  const tmp = new THREE.Scene();
+  const skyClone = s.sky.mesh.clone();
+  skyClone.material = s.sky.mat;
+  tmp.add(skyClone);
+  const env = s.pmrem.fromScene(tmp, 0.06, 1, 600);
+  s.envTarget = env;
+  s.scene.environment = env.texture;
   syncOpenRoofLighting(s);
   document
     .querySelectorAll<HTMLElement>("[data-time]")

@@ -19,15 +19,19 @@ export function buildStairs(
   const x1 = well.x1 - 0.06;
   const w = x1 - x0;
   const xc = (x0 + x1) / 2;
-  // start at south (well.z1), go north
+  // start at south (well.z1), go north. Top of the 16th tread is flush with L2 FFL.
+  const cap = 0.03;
   for (let i = 0; i < n; i++) {
     const z = well.z1 - 0.04 - (i + 0.5) * tread;
-    const y = Y_GF_TOP + (i + 1) * riser - riser / 2;
-    addBox(wallsGrp, w, riser, tread - 0.01, xc, y, z, mats.woodMid, rec, { clip: true });
-    // tread cap
-    addBox(wallsGrp, w, 0.03, tread, xc, Y_GF_TOP + (i + 1) * riser + 0.015, z, mats.floor, rec, {
+    const riserTop = Y_GF_TOP + (i + 1) * riser;
+    const bodyH = riser - cap;
+    addBox(wallsGrp, w, bodyH, tread - 0.01, xc, riserTop - cap - bodyH / 2, z, mats.woodMid, rec, {
+      clip: true,
+    });
+    addBox(wallsGrp, w, cap, tread, xc, riserTop - cap / 2, z, mats.floor, rec, {
       clip: true,
       noCast: true,
+      name: i === n - 1 ? "asm-stair-top" : undefined,
     });
   }
   // stringers

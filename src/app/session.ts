@@ -72,6 +72,7 @@ export interface Session {
   xrayLayer: LayerId;
   cutDir: CutDir;
   cutValue: number;
+  capColors: boolean;
   prevMode: ViewMode;
   roofY: number;
 }

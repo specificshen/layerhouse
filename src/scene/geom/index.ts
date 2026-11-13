@@ -30,6 +30,8 @@ export interface MeshFlags {
   collide?: boolean;
   /** Section cap follows the rigid roof lift. */
   lifts?: boolean;
+  /** Section-cap tint for the floor assembly proof. Ignored unless colored caps are on. */
+  capColor?: number;
   seg?: 4 | 6 | 8;
   low?: boolean;
 }
@@ -134,10 +136,15 @@ export function addBox(
     hy = sy / 2,
     hz = sz / 2;
   if (flags.clip && rec) {
-    const box = {
+    const box: {
+      min: THREE.Vector3;
+      max: THREE.Vector3;
+      capColor?: number;
+    } = {
       min: new THREE.Vector3(x - hx, y - hy, z - hz),
       max: new THREE.Vector3(x + hx, y + hy, z + hz),
     };
+    if (flags.capColor !== undefined) box.capColor = flags.capColor;
     if (flags.lifts) rec.roofClipBoxes.push(box);
     else rec.clipBoxes.push(box);
   }

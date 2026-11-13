@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="./assets/favicon.png" />
-    <title>层宅 / Layer House</title>
-    <link rel="stylesheet" href="./styles/app.css" />
+    <title></title>
+    <link rel="stylesheet" href="./ui/styles/app.css" />
   </head>
   <body>
     <canvas id="c"></canvas>
 
     <div id="loader">
       <div class="inner">
-        <h2>层宅</h2>
-        <p>Layer House</p>
+        <h2 id="loader-title"></h2>
+        <p id="loader-sub"></p>
         <div class="bar"><i id="loadbar"></i></div>
         <button id="skip" type="button">跳过 Skip</button>
       </div>
@@ -21,19 +21,19 @@
 
     <div class="hud" id="hud">
       <div class="brand">
-        <h1>层宅</h1>
-        <div class="sub">Layer House</div>
+        <h1 id="brand-title"></h1>
+        <div class="sub" id="brand-sub"></div>
         <div class="stats">
           <div class="stat">
-            <div class="n">3</div>
+            <div class="n" id="stat-beds"></div>
             <div class="u">室 · Beds</div>
           </div>
           <div class="stat">
-            <div class="n">186</div>
+            <div class="n" id="stat-area"></div>
             <div class="u">m²</div>
           </div>
           <div class="stat">
-            <div class="n">2024</div>
+            <div class="n" id="stat-year"></div>
             <div class="u">建成 · Built</div>
           </div>
           <div class="stat">
@@ -41,7 +41,7 @@
             <div class="u">渲染</div>
           </div>
         </div>
-        <div class="tags">庭院水池 · 临水栈道 · 书房</div>
+        <div class="tags" id="brand-tags"></div>
       </div>
 
       <div class="top-right">
@@ -218,6 +218,7 @@
       </div>
     </div>
 
+    <script type="module" src="./ui/labels.ts"></script>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

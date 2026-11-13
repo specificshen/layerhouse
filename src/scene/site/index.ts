@@ -7,12 +7,7 @@ import { buildCarport, buildDock, buildFence, buildLotDressing } from "./hardsca
 import { maple, pine, planter, shrub } from "./trees";
 import { createCanalMaterial, createPoolWater } from "./water";
 
-export function buildSite(
-  _scene: THREE.Scene,
-  groups: HouseGroups,
-  mats: Materials,
-  rec: HouseRecord,
-) {
+export function buildSite(groups: HouseGroups, mats: Materials, rec: HouseRecord) {
   const site = groups.site;
   const land = groups.landscape;
 
@@ -178,7 +173,7 @@ export function buildSite(
   return { px, pz, pw, pd };
 }
 
-export function buildWater(_scene: THREE.Scene, rec: HouseRecord): THREE.Group {
+export function buildWater(rec: HouseRecord): THREE.Group {
   const poolMeta = rec.poolMeta;
   if (!poolMeta) throw new Error("poolMeta missing — buildSite must run first");
   const canal = new THREE.Mesh(new THREE.PlaneGeometry(160, 90), createCanalMaterial());

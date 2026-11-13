@@ -1,15 +1,14 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PMREMGenerator, WebGPURenderer } from "three/webgpu";
-import { lerpCam, orbitPreset, tickCamera } from "./app/camera";
-import { mustEl } from "./app/dom";
-import { bindHud, closeHelp, isHelpOpen, syncModeChrome } from "./app/hud";
-import { createHotspots } from "./app/hotspots";
 import { addRoomBounce, applyTime, syncOpenRoofLighting } from "./app/lighting";
 import { createPipeline } from "./app/post";
 import { cutRange, mountClipGroup, updateCut } from "./app/section";
 import type { Session } from "./app/session";
-import { setHouseVisibility } from "./app/visibility";
+import { CAM, EYE, QUALITY, ROOF_LIFT } from "./config";
+import { lerpCam, orbitPreset, tickCamera } from "./features/camera";
+import { createHotspots } from "./features/hotspots";
+import { setHouseVisibility } from "./features/layers/visibility";
 import {
   applyWalkLook,
   bindWalkPointer,
@@ -18,17 +17,19 @@ import {
   toggleNearestDoor,
   updateDoors,
   updateWalk,
-} from "./app/walk";
-import { CAM, EYE, QUALITY, ROOF_LIFT } from "./config";
-import { furnishHouse } from "./scene/furnish";
+} from "./features/walk";
 import { buildHouse, heightAt } from "./scene/house";
+import { furnishHouse } from "./scene/furnish";
 import { createMaterials, createTextures } from "./scene/materials";
 import { createSky, createSunDisc } from "./scene/sky";
 import { buildLandscape, buildSite, buildWater } from "./scene/site";
 import { buildNeighbors } from "./scene/site/neighbors";
 import { buildSystems } from "./scene/systems";
 import type { CutDir, DemoApi, LayerId, Vec3, ViewMode } from "./types";
-
+import { cutPanel } from "./ui/cut-panel";
+import { mustEl, setActive } from "./ui/dom";
+import { createHelpDialog } from "./ui/help-dialog";
+import { bindHud, syncModeChrome } from "./ui/hud";
 const params = new URLSearchParams(location.search);
 if (params.get("fx") === "low") {
   QUALITY.ao = false;
@@ -40,7 +41,7 @@ const forceWebGL = params.get("backend") === "webgl";
 const canvas = mustEl<HTMLCanvasElement>("c");
 const renderer = new WebGPURenderer({
   canvas,
-  antialias: params.get("msaa") !== "0",
+  antialias: true,
   powerPreference: "high-performance",
   forceWebGL,
 });
@@ -72,7 +73,6 @@ orbit.mouseButtons = {
 };
 
 const sky = createSky();
-if (params.get("nosky") === "1") sky.mesh.visible = false;
 scene.add(sky.mesh);
 const sunDisc = createSunDisc();
 scene.add(sunDisc);
@@ -83,7 +83,7 @@ const amb = new THREE.AmbientLight(0x4a4058, 0.22);
 scene.add(amb);
 const sun = new THREE.DirectionalLight(0xff8a62, 0.95);
 sun.castShadow = true;
-sun.shadow.mapSize.set(params.get("shadow") === "1024" ? 1024 : 2048, params.get("shadow") === "1024" ? 1024 : 2048);
+sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 80;
 sun.shadow.camera.left = -28;
@@ -104,7 +104,7 @@ const textures = createTextures();
 const mats = createMaterials(textures);
 const rec = buildHouse(mats);
 furnishHouse(rec.groups, mats, rec);
-buildSite(scene, rec.groups, mats, rec);
+buildSite(rec.groups, mats, rec);
 buildLandscape(rec.groups, mats, rec);
 buildSystems(rec.groups, mats, rec);
 
@@ -113,9 +113,9 @@ houseRoot.name = "houseRoot";
 for (const group of Object.values(rec.groups)) houseRoot.add(group);
 scene.add(houseRoot);
 
-const neighbors = buildNeighbors(scene, mats, rec);
+const neighbors = buildNeighbors(mats, rec);
 scene.add(neighbors);
-const waterGrp = buildWater(scene, rec);
+const waterGrp = buildWater(rec);
 scene.add(waterGrp);
 
 const bloom = { strength: 0.22, radius: 0.35, threshold: 0.88 };
@@ -171,6 +171,7 @@ const session: Session = {
   xrayLayer: "framing",
   cutDir: "top",
   cutValue: 4.3,
+  capColors: false,
   prevMode: "exploded",
   roofY: ROOF_LIFT,
 };
@@ -207,6 +208,8 @@ function setMode(next: ViewMode) {
   }
 }
 
+const help = createHelpDialog();
+
 bindHud({
   setMode,
   applyTime: (id) => applyTime(session, id),
@@ -220,7 +223,7 @@ bindHud({
     const range = cutRange(session);
     session.cutValue = range.def;
     const slider = mustEl<HTMLInputElement>("cut-slider");
-    slider.value = String(((session.cutValue - range.min) / (range.max - range.min)) * 100);
+    slider.value = String(cutPanel(range, session.cutValue, "meters"));
     updateCut(session);
     const key = dir === "side" ? "cutSide" : dir === "front" ? "cutFront" : "cut";
     lerpCam(session, CAM[key].pos, CAM[key].target, 0.8);
@@ -244,7 +247,7 @@ canvas.addEventListener("mousemove", (event) => hotspots.onMouseMove(event));
 window.addEventListener("keydown", (event) => {
   session.walk.keys[event.code] = true;
   if (event.code === "Escape") {
-    if (isHelpOpen()) closeHelp();
+    if (help.isOpen()) help.close();
     else if (session.mode === "walk") setMode(session.prevMode || "exploded");
   }
   if ((event.code === "KeyE" || event.code === "KeyF") && session.mode === "walk") {
@@ -282,12 +285,7 @@ function animate() {
   else orbit.update();
   updateDoors(session, dt);
   hotspots.updateLabel();
-  try {
-    if (params.get("raw") === "1") renderer.render(scene, camera);
-    else pipeline.render();
-  } catch (err) {
-    console.error("render failed", err);
-  }
+  pipeline.render();
 }
 
 function hideLoader() {
@@ -308,13 +306,6 @@ async function start() {
   applyTime(session, "dusk");
   setMode("exploded");
   setHouseVisibility(session);
-  if (params.get("min") === "1") {
-    for (const group of Object.values(rec.groups)) group.visible = false;
-    neighbors.visible = false;
-    waterGrp.visible = false;
-    sun.castShadow = false;
-    rec.groups.walls.visible = true;
-  }
   mustEl<HTMLElement>("loadbar").style.width = "100%";
   animate();
   setTimeout(hideLoader, 400);
@@ -326,22 +317,16 @@ const demo: DemoApi = {
   applyTime: (id) => applyTime(session, id),
   setLayer(id: LayerId) {
     session.xrayLayer = id;
-    document
-      .querySelectorAll<HTMLElement>("#layer-list button")
-      .forEach((button) => button.classList.toggle("active", button.dataset.layer === id));
+    setActive("#layer-list button", (button) => button.dataset.layer === id);
     setHouseVisibility(session);
   },
   setCut(dir: CutDir, value: number) {
     if (session.mode !== "cut") setMode("cut");
     session.cutDir = dir;
     session.cutValue = value;
-    document
-      .querySelectorAll<HTMLElement>("#cut-panel [data-cut]")
-      .forEach((button) => button.classList.toggle("active", button.dataset.cut === dir));
+    setActive("#cut-panel [data-cut]", (button) => button.dataset.cut === dir);
     const range = cutRange(session);
-    mustEl<HTMLInputElement>("cut-slider").value = String(
-      ((value - range.min) / (range.max - range.min)) * 100,
-    );
+    mustEl<HTMLInputElement>("cut-slider").value = String(cutPanel(range, value, "meters"));
     updateCut(session);
     const preset = CAM[dir === "side" ? "cutSide" : dir === "front" ? "cutFront" : "cut"];
     camera.position.set(preset.pos[0], preset.pos[1], preset.pos[2]);
@@ -372,6 +357,36 @@ const demo: DemoApi = {
     session.roofY = y;
     rec.roofGroup.position.y = y;
     syncOpenRoofLighting(session);
+  },
+  showLayer(id, visible) {
+    rec.groups[id].visible = visible;
+  },
+  showNeighbors(visible: boolean) {
+    neighbors.visible = visible;
+  },
+  colorCaps(on: boolean) {
+    session.capColors = on;
+    if (session.mode === "cut") updateCut(session);
+  },
+  measure(prefix: string) {
+    const out: Record<string, { y0: number; y1: number }> = {};
+    houseRoot.updateWorldMatrix(true, true);
+    waterGrp.updateWorldMatrix(true, true);
+    const box = new THREE.Box3();
+    const visit = (obj: THREE.Object3D) => {
+      if (obj instanceof THREE.Mesh && obj.name.startsWith(prefix)) {
+        box.setFromObject(obj);
+        const cur = out[obj.name];
+        if (!cur) out[obj.name] = { y0: box.min.y, y1: box.max.y };
+        else {
+          cur.y0 = Math.min(cur.y0, box.min.y);
+          cur.y1 = Math.max(cur.y1, box.max.y);
+        }
+      }
+    };
+    houseRoot.traverse(visit);
+    waterGrp.traverse(visit);
+    return out;
   },
   get state() {
     return {
