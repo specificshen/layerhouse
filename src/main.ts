@@ -169,6 +169,7 @@ const session: Session = {
   xrayLayer: "framing",
   cutDir: "top",
   cutValue: 4.3,
+  capColors: false,
   prevMode: "exploded",
   roofY: ROOF_LIFT,
 };
@@ -351,6 +352,10 @@ const demo: DemoApi = {
   },
   showNeighbors(visible: boolean) {
     neighbors.visible = visible;
+  },
+  colorCaps(on: boolean) {
+    session.capColors = on;
+    if (session.mode === "cut") updateCut(session);
   },
   measure(prefix: string) {
     const out: Record<string, { y0: number; y1: number }> = {};

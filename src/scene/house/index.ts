@@ -103,7 +103,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true, name: "asm-gf-struct" },
+    { clip: true, name: "asm-gf-struct", capColor: 0x8a8c8e },
   );
   addBox(
     groups.masonry,
@@ -115,7 +115,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (WING.z0 + WING.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true, name: "asm-gf-struct" },
+    { clip: true, name: "asm-gf-struct", capColor: 0x8a8c8e },
   );
 
   addBox(
@@ -128,7 +128,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true, name: "asm-gf-finish" },
+    { clip: true, noCast: true, name: "asm-gf-finish", capColor: 0xc4895a },
   );
   addBox(
     groups.walls,
@@ -140,7 +140,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (WING.z0 + WING.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true, name: "asm-gf-finish" },
+    { clip: true, noCast: true, name: "asm-gf-finish", capColor: 0xc4895a },
   );
 
   // L2 slab with stair opening (compose around the well)
@@ -157,7 +157,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true, name: "asm-l2-struct" },
+    { clip: true, name: "asm-l2-struct", capColor: 0x8a8c8e },
   );
   // east of well
   addBox(
@@ -170,7 +170,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true, name: "asm-l2-struct" },
+    { clip: true, name: "asm-l2-struct", capColor: 0x8a8c8e },
   );
   // West and east strips run the full depth and stop at the well. Close the north and south.
   addBox(
@@ -183,7 +183,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + well.z0) / 2,
     mats.cmu,
     rec,
-    { clip: true, name: "asm-l2-struct" },
+    { clip: true, name: "asm-l2-struct", capColor: 0x8a8c8e },
   );
   addBox(
     groups.masonry,
@@ -195,7 +195,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (well.z1 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true, name: "asm-l2-struct" },
+    { clip: true, name: "asm-l2-struct", capColor: 0x8a8c8e },
   );
 
   // L2 oak
@@ -210,7 +210,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true, name: "asm-l2-finish" },
+    { clip: true, noCast: true, name: "asm-l2-finish", capColor: 0xc4895a },
   );
   addBox(
     groups.walls,
@@ -222,7 +222,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true, name: "asm-l2-finish" },
+    { clip: true, noCast: true, name: "asm-l2-finish", capColor: 0xc4895a },
   );
   addBox(
     groups.walls,
@@ -234,7 +234,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + well.z0) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true, name: "asm-l2-finish" },
+    { clip: true, noCast: true, name: "asm-l2-finish", capColor: 0xc4895a },
   );
   addBox(
     groups.walls,
@@ -246,7 +246,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (well.z1 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true, name: "asm-l2-finish" },
+    { clip: true, noCast: true, name: "asm-l2-finish", capColor: 0xc4895a },
   );
 
   // GF soffit stays at +3.050. Keep it under the L2 soffit (+3.080) so the plaster
@@ -264,7 +264,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true, name: "asm-gf-ceil" },
+    { clip: true, noCast: true, name: "asm-gf-ceil", capColor: 0xe7e0d4 },
   );
   addBox(
     groups.walls,
@@ -276,7 +276,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true, name: "asm-gf-ceil" },
+    { clip: true, noCast: true, name: "asm-gf-ceil", capColor: 0xe7e0d4 },
   );
   addBox(
     groups.walls,
@@ -288,7 +288,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + well.z0) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true, name: "asm-gf-ceil" },
+    { clip: true, noCast: true, name: "asm-gf-ceil", capColor: 0xe7e0d4 },
   );
   addBox(
     groups.walls,
@@ -300,7 +300,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (well.z1 + MAIN.z1) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true, name: "asm-gf-ceil" },
+    { clip: true, noCast: true, name: "asm-gf-ceil", capColor: 0xe7e0d4 },
   );
   addBox(
     groups.walls,
