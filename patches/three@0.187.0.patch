@@ -1,31 +1,24 @@
 diff --git a/build/three.webgpu.js b/build/three.webgpu.js
-index f8fc49fe7df98cbac4609603a1f2a2c6aea79675..44f15ff29e66fda6413ab12a0528028401c04eb7 100644
+index f8fc49fe7df98cbac4609603a1f2a2c6aea79675..82027037022faeba25c49f0f5a98fcddc860214c 100644
 --- a/build/three.webgpu.js
 +++ b/build/three.webgpu.js
-@@ -45872,15 +45872,32 @@ class WebGPUAttributeUtils {
+@@ -45872,15 +45872,25 @@ class WebGPUAttributeUtils {
  			_bufferDescriptor$3.label = bufferAttribute.name;
  			_bufferDescriptor$3.size = size;
  			_bufferDescriptor$3.usage = usage;
 -			_bufferDescriptor$3.mappedAtCreation = true;
-+			// Some WebGPU implementations (notably software adapters) reject
-+			// large mappedAtCreation buffers. Upload those with writeBuffer.
-+			const mapAtCreation = size <= 262144;
-+			_bufferDescriptor$3.mappedAtCreation = mapAtCreation;
++			// mappedAtCreation is rejected for surprisingly small buffers on some
++			// software WebGPU adapters. writeBuffer has the same result.
++			_bufferDescriptor$3.mappedAtCreation = false;
  
  			buffer = device.createBuffer( _bufferDescriptor$3 );
  
  			_bufferDescriptor$3.reset();
  
 -			new array.constructor( buffer.getMappedRange() ).set( array );
-+			if ( mapAtCreation ) {
++			if ( array.byteLength === size ) {
  
 -			buffer.unmap();
-+				new array.constructor( buffer.getMappedRange() ).set( array );
-+
-+				buffer.unmap();
-+
-+			} else if ( array.byteLength === size ) {
-+
 +				device.queue.writeBuffer( buffer, 0, array );
 +
 +			} else {
