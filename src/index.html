@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="./favicon.png" />
+    <title>层宅 / Layer House</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+
+    <div id="loader">
+      <div class="inner">
+        <h2>层宅</h2>
+        <p>Layer House</p>
+        <div class="bar"><i id="loadbar"></i></div>
+        <button id="skip" type="button">跳过 Skip</button>
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <div class="brand">
+        <h1>层宅</h1>
+        <div class="sub">Layer House</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="n">3</div>
+            <div class="u">室 · Beds</div>
+          </div>
+          <div class="stat">
+            <div class="n">186</div>
+            <div class="u">m²</div>
+          </div>
+          <div class="stat">
+            <div class="n">2024</div>
+            <div class="u">建成 · Built</div>
+          </div>
+        </div>
+        <div class="tags">庭院水池 · 临水栈道 · 书房</div>
+      </div>
+
+      <div class="top-right">
+        <button class="icon-btn" id="btn-reset" title="Reset view / 重置视角">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" />
+            <path d="M12 5v4l3-1" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="dial-wrap">
+        <div class="dial" id="dial">
+          <div class="dial-center"></div>
+          <!-- outer: view modes -->
+          <button class="d-btn" data-view="exterior" style="left: 70%; top: 18%" title="Exterior">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 11.5 12 4l9 7.5V20H3z" />
+              <path d="M9 20v-7h6v7" />
+            </svg>
+            <span class="tip"><b>外观</b><span>Exterior</span></span>
+          </button>
+          <button class="d-btn" data-view="exploded" style="left: 86%; top: 36%" title="Exploded">
+            <svg viewBox="0 0 24 24">
+              <rect x="5" y="14" width="14" height="6" rx="0.5" />
+              <rect x="5" y="9" width="14" height="3.2" />
+              <rect x="5" y="4" width="14" height="3.2" />
+            </svg>
+            <span class="tip"><b>剖开</b><span>Exploded</span></span>
+          </button>
+          <button class="d-btn" data-view="cut" style="left: 88%; top: 62%" title="Cut view">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 8h10v12H4z" />
+              <path d="M8 4h12v10" />
+              <path d="M4 14h16" />
+            </svg>
+            <span class="tip"><b>剖切</b><span>Cut view</span></span>
+          </button>
+          <button class="d-btn" data-view="xray" style="left: 74%; top: 82%" title="X-ray">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 11 12 4l8 7v9H4z" />
+              <path d="M8 20v-6h8v6M9 11h6" />
+            </svg>
+            <span class="tip"><b>透视</b><span>X-ray</span></span>
+          </button>
+          <button class="d-btn" data-view="walk" style="left: 50%; top: 90%" title="Walkthrough">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="2" />
+              <path d="M8 21l2-7 2 3 2-8" />
+              <path d="M7 11h10" />
+              <path d="M4 3h4v18H4z" />
+            </svg>
+            <span class="tip"><b>漫游</b><span>Walkthrough</span></span>
+          </button>
+          <!-- inner: time of day -->
+          <button class="d-btn" data-time="night" style="left: 24%; top: 32%" title="Night">
+            <svg viewBox="0 0 24 24">
+              <path d="M15 3.5A8 8 0 1 0 20.5 15 6.2 6.2 0 0 1 15 3.5z" />
+            </svg>
+            <span class="tip"><b>夜晚</b><span>Night</span></span>
+          </button>
+          <button class="d-btn" data-time="dawn" style="left: 42%; top: 24%" title="Dawn">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 18h16" />
+              <path d="M12 16V9" />
+              <circle cx="12" cy="7" r="2.2" />
+              <path d="M5 14l2-1M19 14l-2-1M8 10l-1.5-1.5M16 10l1.5-1.5" />
+            </svg>
+            <span class="tip"><b>黎明</b><span>Dawn</span></span>
+          </button>
+          <button class="d-btn" data-time="day" style="left: 50%; top: 50%" title="Day">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3.2" />
+              <path
+                d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.7 5.7l1.7 1.7M16.6 16.6l1.7 1.7M5.7 18.3l1.7-1.7M16.6 7.4l1.7-1.7"
+              />
+            </svg>
+            <span class="tip"><b>白昼</b><span>Day</span></span>
+          </button>
+          <button class="d-btn" data-time="dusk" style="left: 26%; top: 68%" title="Dusk">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 17h16" />
+              <path d="M6 17a6 6 0 0 1 12 0" />
+              <path d="M12 7V5M8.2 8.4 7 7.2M15.8 8.4 17 7.2" />
+            </svg>
+            <span class="tip"><b>黄昏</b><span>Dusk</span></span>
+          </button>
+          <button class="d-btn" id="btn-reset-dial" style="left: 12%; top: 50%" title="Reset">
+            <svg viewBox="0 0 24 24">
+              <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />
+              <path d="M4 5.5v4h4" />
+            </svg>
+            <span class="tip"><b>重置</b><span>Reset</span></span>
+          </button>
+        </div>
+        <button class="help-btn" id="btn-help" type="button" title="Help">?</button>
+      </div>
+
+      <div class="side-panel" id="cut-panel">
+        <div class="pill">
+          <button type="button" data-cut="top" class="active" title="Cut from top">
+            <svg viewBox="0 0 24 24">
+              <rect x="5" y="7" width="14" height="12" />
+              <path d="M5 11h14" />
+            </svg>
+          </button>
+          <button type="button" data-cut="side" title="Cut from side">
+            <svg viewBox="0 0 24 24">
+              <rect x="5" y="6" width="14" height="13" />
+              <path d="M12 6v13" />
+            </svg>
+          </button>
+          <button type="button" data-cut="front" title="Cut from front">
+            <svg viewBox="0 0 24 24">
+              <path d="M5 8h10v11H5z" />
+              <path d="M15 10l4-2v11l-4 2z" />
+            </svg>
+          </button>
+        </div>
+        <div class="slider-col">
+          <input id="cut-slider" type="range" min="0" max="100" value="48" />
+          <div class="meter" id="cut-meter">4.3 m</div>
+        </div>
+      </div>
+
+      <div class="layer-list" id="layer-list"></div>
+
+      <div class="hot-label" id="hot-label"></div>
+
+      <div class="walk-bar" id="walk-bar">
+        <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7)">第一人称漫游</span>
+        <button type="button" id="btn-return">返回视图 · Esc</button>
+      </div>
+      <div class="walk-hints" id="walk-hints">
+        <div class="kbd"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</div>
+        <div class="kbd"><kbd>E</kbd> 开门</div>
+        <div class="kbd"><kbd>Space</kbd> 跳</div>
+        <div class="kbd">鼠标 视角</div>
+      </div>
+
+      <div class="modal-bg" id="help-bg"></div>
+      <div class="help" id="help">
+        <button class="close" id="help-close" type="button">×</button>
+        <h3>鼠标操作 · Mouse</h3>
+        <div class="rows">
+          <div class="row">
+            <div class="ico">🖱️</div>
+            <b>旋转 Rotate</b><span>左键拖拽 · Left drag</span>
+          </div>
+          <div class="row">
+            <div class="ico">🖱️</div>
+            <b>平移 Pan</b><span>右键拖拽 · Right drag</span>
+          </div>
+          <div class="row">
+            <div class="ico">🖱️</div>
+            <b>缩放 Zoom</b><span>滚轮 · Scroll</span>
+          </div>
+        </div>
+        <div class="extra">
+          默认进入「剖开 +
+          黄昏」。左侧外圈切换观察方式，内圈切换晨昏。透视模式可逐层查看结构与机电。
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

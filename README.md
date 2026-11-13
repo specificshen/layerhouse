@@ -1,1 +1,72 @@
-# layerhouse
+# 层宅 / Layer House
+
+一套原创的 Three.js 互动演示，复刻 Pascal 公开营销页（https://editor.pascal.app/next）的**观察与剖视交互**：屋顶整体抬起、剖切面、单层透视、晨昏切换、第一人称漫游。房屋本身是原创的两层庭院住宅，没有使用 Pascal 的模型、贴图或品牌。
+
+视觉与交互与原先的静态 ES 模块版本一致，这里只把工程换成 **Bun + TypeScript**。Three.js 使用 npm 上的 `three@0.187.0`（与原先内置的 r187 同一版），不再 vendor。
+
+需要 [Bun 1.4+](https://bun.com)（本机开发用的是 1.4.4）。不要用 Vite、Rsbuild 或 webpack。
+
+## 开发
+
+```bash
+bun install
+bun dev
+```
+
+开发服务器由 Bun 直接托管 `src/index.html`（自带打包与 HMR），默认地址：
+
+```
+http://localhost:5173
+```
+
+建议使用较新的 Chrome / Edge / Firefox，需支持 WebGL2。
+
+## 类型检查与格式化
+
+```bash
+bun check
+bun fmt
+```
+
+## 构建单个 HTML
+
+```bash
+bun build
+```
+
+会在 `dist/index.html` 生成一份**独立的单文件 HTML**：JavaScript、CSS 和 favicon 都会内联进去，没有旁边的 `.js` / `.css` 依赖。可以用任意静态服务器打开，也可以直接用浏览器打开该文件（`file://`）。
+
+`file://` 下 WebGL 在常见桌面浏览器里可以工作。若某个浏览器限制了本地文件的 WebGL 或 Pointer Lock（漫游时锁定鼠标），改用本地 http 打开同一文件即可。
+
+截图目录不属于运行时构建，不会打进这个单文件。
+
+## 操作
+
+- **左键拖拽**：旋转；**右键拖拽**：平移；**滚轮**：缩放。右上角或转盘左侧「重置」回到当前模式预设机位。
+- **左侧转盘外圈**：外观 / 剖开 / 剖切 / 透视 / 漫游。
+- **内圈**：夜晚 / 黎明 / 白昼 / 黄昏。默认进入 **剖开 + 黄昏**。
+- **剖切**：可选从顶、从侧、从正立面切开，拖动滑杆改变剖切位置（米）。
+- **透视**：一次只看一层构造（骨架、砌体、屋面、保温、机电等）。
+- **漫游**：WASD 移动，鼠标观察，E 开门，空格跳跃，Esc 返回上一视图。不会掉到楼板下面。
+- 悬停屋顶、枢轴门、庭院水庭、庭树会显示白色轮廓和简短标注。
+
+## 目录
+
+```
+src/
+  index.html      页面与左侧转盘 HUD
+  styles.css
+  main.ts         入口：渲染、模式、剖切、漫游
+  types.ts        模式 / 时段 / 图层等联合类型
+  config.ts       尺寸、晨昏配方、机位、图层
+  geom.ts         几何与批量实例
+  materials.ts    材质与程序纹理
+  sky.ts          天空与太阳
+  house.ts        墙体、屋顶、门窗楼梯
+  furnish.ts      室内陈设
+  site.ts         场地、水庭、邻里
+  systems.ts      构造层：骨架、砌体、机电
+dist/             bun build 产出的单文件 HTML
+```
+
+旧的纯 JS 静态版仍保留在仓库旁的 `layerhouse/` 目录，作为对照，不是本工程的运行入口。
