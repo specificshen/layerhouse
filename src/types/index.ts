@@ -27,19 +27,8 @@ export type LayerId = (typeof LAYER_IDS)[number];
 export const CUT_DIRS = ["top", "side", "front"] as const;
 export type CutDir = (typeof CUT_DIRS)[number];
 
-export const CAMERA_PRESET_IDS = [
-  "exterior",
-  "exploded",
-  "cut",
-  "cutSide",
-  "cutFront",
-  "xray",
-] as const;
-export type CameraPresetId = (typeof CAMERA_PRESET_IDS)[number];
-
 export type Vec3 = readonly [number, number, number];
 
-export type Axis = "x" | "y" | "z";
 export type WallAxis = "x" | "z";
 export type WallKind = "ext" | "int";
 export type WallFinish = "stucco" | "cedar" | "interior";
@@ -288,16 +277,8 @@ export function isTimeId(v: string | undefined): v is TimeId {
   return v !== undefined && (TIME_IDS as readonly string[]).includes(v);
 }
 
-export function isLayerId(v: string | undefined): v is LayerId {
-  return v !== undefined && (LAYER_IDS as readonly string[]).includes(v);
-}
-
 export function isCutDir(v: string | undefined): v is CutDir {
   return v !== undefined && (CUT_DIRS as readonly string[]).includes(v);
-}
-
-export function isCameraPresetId(v: string | undefined): v is CameraPresetId {
-  return v !== undefined && (CAMERA_PRESET_IDS as readonly string[]).includes(v);
 }
 
 declare global {

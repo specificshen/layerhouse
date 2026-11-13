@@ -98,7 +98,7 @@ const textures = createTextures();
 const mats = createMaterials(textures);
 const rec = buildHouse(mats);
 furnishHouse(rec.groups, mats, rec);
-buildSite(scene, rec.groups, mats, rec);
+buildSite(rec.groups, mats, rec);
 buildLandscape(rec.groups, mats, rec);
 buildSystems(rec.groups, mats, rec);
 
@@ -107,9 +107,9 @@ houseRoot.name = "houseRoot";
 for (const group of Object.values(rec.groups)) houseRoot.add(group);
 scene.add(houseRoot);
 
-const neighbors = buildNeighbors(scene, mats, rec);
+const neighbors = buildNeighbors(mats, rec);
 scene.add(neighbors);
-const waterGrp = buildWater(scene, rec);
+const waterGrp = buildWater(rec);
 scene.add(waterGrp);
 
 const composer = new EffectComposer(renderer);

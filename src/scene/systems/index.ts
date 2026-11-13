@@ -284,25 +284,6 @@ function buildInsulation(parent: THREE.Object3D, rec: HouseRecord, mats: Materia
   batts.flush(parent, { cast: false, receive: true });
 }
 
-function ductRun(
-  batch: CylBatch,
-  x0: number,
-  y0: number,
-  z0: number,
-  x1: number,
-  y1: number,
-  _z1: number,
-  r = 0.16,
-) {
-  // axis-aligned manhattan: go y, then x, then z (or already axis aligned)
-  // vertical if needed
-  if (Math.abs(y1 - y0) > 0.05) {
-    batch.add(r, Math.abs(y1 - y0), x0 + x1 === 2 * x0 ? x0 : x0, (y0 + y1) / 2, z0, 0, 0, 0);
-    // fix: CylBatch add(r, h, x, y, z)
-  }
-}
-void ductRun;
-
 function addDuctXYZ(
   _cyl: CylBatch | null,
   box: BoxBatch,

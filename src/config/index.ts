@@ -207,7 +207,7 @@ export const CAM = {
   cutSide: { pos: [1.2, 8.6, 19.5], target: [0.4, 3.1, 0.2] },
   cutFront: { pos: [0.8, 9.8, 22.5], target: [0.0, 3.0, -1.5] },
   xray: { pos: [18.5, 14.8, 15.5], target: [0.0, 2.6, -1.8] },
-  walkStart: { pos: [-0.95, Y_GF_TOP + 1.62, 9.45], yaw: 0, pitch: 0.04 },
+  walkStart: { pos: [-0.95, Y_GF_TOP + EYE, 9.45], yaw: 0, pitch: 0.04 },
 } as const satisfies {
   exterior: OrbitPreset;
   exploded: OrbitPreset;
