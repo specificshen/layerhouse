@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import type { HouseRecord, Mode } from "../types";
-import { mustEl } from "../ui/dom";
+import type { HouseRecord, Mode } from "../../types";
+import { mustEl } from "../../ui/dom";
 
 export interface HotspotController {
   onMouseMove: (ev: MouseEvent) => void;

@@ -4,16 +4,12 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { lerpCam, orbitPreset, tickCamera } from "./app/camera";
-import { cutPanel } from "./ui/cut-panel";
-import { mustEl, setActive } from "./ui/dom";
-import { createHelpDialog } from "./ui/help-dialog";
-import { bindHud, syncModeChrome } from "./ui/hud";
-import { createHotspots } from "./app/hotspots";
 import { applyTime, syncOpenRoofLighting } from "./app/lighting";
 import { CLIP_TARGETS, cutRange, enableClipping, updateCut } from "./app/section";
 import type { Session } from "./app/session";
-import { setHouseVisibility } from "./app/visibility";
+import { lerpCam, orbitPreset, tickCamera } from "./features/camera";
+import { createHotspots } from "./features/hotspots";
+import { setHouseVisibility } from "./features/layers/visibility";
 import {
   applyWalkLook,
   bindWalkPointer,
@@ -22,7 +18,11 @@ import {
   toggleNearestDoor,
   updateDoors,
   updateWalk,
-} from "./app/walk";
+} from "./features/walk";
+import { cutPanel } from "./ui/cut-panel";
+import { mustEl, setActive } from "./ui/dom";
+import { createHelpDialog } from "./ui/help-dialog";
+import { bindHud, syncModeChrome } from "./ui/hud";
 import { CAM, EYE, ROOF_LIFT } from "./config";
 import { furnishHouse } from "./scene/furnish";
 import { buildHouse, heightAt } from "./scene/house";
