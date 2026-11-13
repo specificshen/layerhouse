@@ -51,16 +51,22 @@
 
       <div class="dial-wrap">
         <div class="dial" id="dial">
+          <div class="dial-ticks" aria-hidden="true"></div>
           <div class="dial-center"></div>
-          <!-- outer: view modes -->
-          <button class="d-btn" data-view="exterior" style="left: 70%; top: 18%" title="Exterior">
+          <!-- outer track: view modes, plus night, dusk, and reset -->
+          <button class="d-btn" data-view="exterior" style="left: 50%; top: 12.5%" title="Exterior">
             <svg viewBox="0 0 24 24">
               <path d="M3 11.5 12 4l9 7.5V20H3z" />
               <path d="M9 20v-7h6v7" />
             </svg>
             <span class="tip"><b>外观</b><span>Exterior</span></span>
           </button>
-          <button class="d-btn" data-view="exploded" style="left: 86%; top: 36%" title="Exploded">
+          <button
+            class="d-btn"
+            data-view="exploded"
+            style="left: 78.73%; top: 25.9%"
+            title="Exploded"
+          >
             <svg viewBox="0 0 24 24">
               <rect x="5" y="14" width="14" height="6" rx="0.5" />
               <rect x="5" y="9" width="14" height="3.2" />
@@ -68,7 +74,7 @@
             </svg>
             <span class="tip"><b>剖开</b><span>Exploded</span></span>
           </button>
-          <button class="d-btn" data-view="cut" style="left: 88%; top: 62%" title="Cut view">
+          <button class="d-btn" data-view="cut" style="left: 87.5%; top: 50%" title="Cut view">
             <svg viewBox="0 0 24 24">
               <path d="M4 8h10v12H4z" />
               <path d="M8 4h12v10" />
@@ -76,14 +82,19 @@
             </svg>
             <span class="tip"><b>剖切</b><span>Cut view</span></span>
           </button>
-          <button class="d-btn" data-view="xray" style="left: 74%; top: 82%" title="X-ray">
+          <button class="d-btn" data-view="xray" style="left: 71.51%; top: 80.72%" title="X-ray">
             <svg viewBox="0 0 24 24">
               <path d="M4 11 12 4l8 7v9H4z" />
               <path d="M8 20v-6h8v6M9 11h6" />
             </svg>
             <span class="tip"><b>透视</b><span>X-ray</span></span>
           </button>
-          <button class="d-btn" data-view="walk" style="left: 50%; top: 90%" title="Walkthrough">
+          <button
+            class="d-btn"
+            data-view="walk"
+            style="left: 34.15%; top: 83.99%"
+            title="Walkthrough"
+          >
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="5" r="2" />
               <path d="M8 21l2-7 2 3 2-8" />
@@ -92,14 +103,14 @@
             </svg>
             <span class="tip"><b>漫游</b><span>Walkthrough</span></span>
           </button>
-          <!-- inner: time of day -->
-          <button class="d-btn" data-time="night" style="left: 24%; top: 32%" title="Night">
+          <!-- night and dusk share the outer track; dawn and day sit on the inner track -->
+          <button class="d-btn" data-time="night" style="left: 23.48%; top: 23.48%" title="Night">
             <svg viewBox="0 0 24 24">
               <path d="M15 3.5A8 8 0 1 0 20.5 15 6.2 6.2 0 0 1 15 3.5z" />
             </svg>
             <span class="tip"><b>夜晚</b><span>Night</span></span>
           </button>
-          <button class="d-btn" data-time="dawn" style="left: 42%; top: 24%" title="Dawn">
+          <button class="d-btn" data-time="dawn" style="left: 56.93%; top: 32.85%" title="Dawn">
             <svg viewBox="0 0 24 24">
               <path d="M4 18h16" />
               <path d="M12 16V9" />
@@ -108,7 +119,7 @@
             </svg>
             <span class="tip"><b>黎明</b><span>Dawn</span></span>
           </button>
-          <button class="d-btn" data-time="day" style="left: 50%; top: 50%" title="Day">
+          <button class="d-btn" data-time="day" style="left: 59.25%; top: 66.02%" title="Day">
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="3.2" />
               <path
@@ -117,7 +128,7 @@
             </svg>
             <span class="tip"><b>白昼</b><span>Day</span></span>
           </button>
-          <button class="d-btn" data-time="dusk" style="left: 26%; top: 68%" title="Dusk">
+          <button class="d-btn" data-time="dusk" style="left: 17.52%; top: 68.75%" title="Dusk">
             <svg viewBox="0 0 24 24">
               <path d="M4 17h16" />
               <path d="M6 17a6 6 0 0 1 12 0" />
@@ -125,7 +136,7 @@
             </svg>
             <span class="tip"><b>黄昏</b><span>Dusk</span></span>
           </button>
-          <button class="d-btn" id="btn-reset-dial" style="left: 12%; top: 50%" title="Reset">
+          <button class="d-btn" id="btn-reset-dial" style="left: 12.5%; top: 50%" title="Reset">
             <svg viewBox="0 0 24 24">
               <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />
               <path d="M4 5.5v4h4" />
@@ -198,7 +209,7 @@
         </div>
         <div class="extra">
           默认进入「剖开 +
-          黄昏」。左侧外圈切换观察方式，内圈切换晨昏。透视模式可逐层查看结构与机电。
+          黄昏」。外圈切换观察方式，靠近圆心切换白昼和黎明，夜晚和黄昏在左外侧。透视模式可逐层查看结构与机电。
         </div>
       </div>
     </div>
