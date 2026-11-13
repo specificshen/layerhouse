@@ -1,0 +1,53 @@
+diff --git a/build/three.webgpu.js b/build/three.webgpu.js
+index f8fc49fe7df98cbac4609603a1f2a2c6aea79675..44f15ff29e66fda6413ab12a0528028401c04eb7 100644
+--- a/build/three.webgpu.js
++++ b/build/three.webgpu.js
+@@ -45872,15 +45872,32 @@ class WebGPUAttributeUtils {
+ 			_bufferDescriptor$3.label = bufferAttribute.name;
+ 			_bufferDescriptor$3.size = size;
+ 			_bufferDescriptor$3.usage = usage;
+-			_bufferDescriptor$3.mappedAtCreation = true;
++			// Some WebGPU implementations (notably software adapters) reject
++			// large mappedAtCreation buffers. Upload those with writeBuffer.
++			const mapAtCreation = size <= 262144;
++			_bufferDescriptor$3.mappedAtCreation = mapAtCreation;
+ 
+ 			buffer = device.createBuffer( _bufferDescriptor$3 );
+ 
+ 			_bufferDescriptor$3.reset();
+ 
+-			new array.constructor( buffer.getMappedRange() ).set( array );
++			if ( mapAtCreation ) {
+ 
+-			buffer.unmap();
++				new array.constructor( buffer.getMappedRange() ).set( array );
++
++				buffer.unmap();
++
++			} else if ( array.byteLength === size ) {
++
++				device.queue.writeBuffer( buffer, 0, array );
++
++			} else {
++
++				const padded = new Uint8Array( size );
++				padded.set( new Uint8Array( array.buffer, array.byteOffset, array.byteLength ) );
++				device.queue.writeBuffer( buffer, 0, padded );
++
++			}
+ 
+ 			bufferData.buffer = buffer;
+ 
+diff --git a/package.json b/package.json
+index 2a7c71bfba5113e4983f26b381a270b72d4b926f..4d38f866c06d4ad9676a55b22e6aa9c52af2ec84 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+   "module": "./build/three.module.js",
+   "exports": {
+     ".": {
+-      "import": "./build/three.module.js",
++      "import": "./build/three.webgpu.js",
+       "require": "./build/three.cjs"
+     },
+     "./examples/fonts/*": "./examples/fonts/*",

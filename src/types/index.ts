@@ -1,4 +1,5 @@
 import type * as THREE from "three";
+import type { MeshPhysicalNodeMaterial } from "three/webgpu";
 
 /** Discrete observer modes on the outer dial (plus an internal boot sentinel). */
 export const VIEW_MODE_IDS = ["exterior", "exploded", "cut", "xray", "walk"] as const;
@@ -170,9 +171,9 @@ export interface PoolMeta {
 
 export interface WaterRecord {
   canal: THREE.Object3D;
-  overlay: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhysicalMaterial>;
+  overlay: THREE.Mesh<THREE.PlaneGeometry, MeshPhysicalNodeMaterial>;
   pool: THREE.Object3D;
-  poolTint: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
+  poolTint: THREE.Mesh<THREE.PlaneGeometry, MeshPhysicalNodeMaterial>;
   poolFloor: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
   poolMid: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
   poolDeep: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ClippingGroup } from "three/webgpu";
 import type { ClipBox, LayerId, OrientedClip } from "../types";
 import type { Session } from "./session";
 import { mustEl } from "./dom";
@@ -26,21 +27,17 @@ export function cutRange(s: Session) {
   return { min: -8.0, max: 8.0, def: 1.2 };
 }
 
-export function enableClipping(s: Session, root: THREE.Object3D) {
-  root.traverse((o) => {
-    if (!(o instanceof THREE.Mesh)) return;
-    const list = Array.isArray(o.material) ? o.material : [o.material];
-    const next = list.map((m) => {
-      if (!s.clipCache.has(m)) {
-        const c = m.clone();
-        c.clippingPlanes = s.clipPlanes;
-        c.clipShadows = true;
-        s.clipCache.set(m, c);
-      }
-      return s.clipCache.get(m)!;
-    });
-    o.material = Array.isArray(o.material) ? next : next[0]!;
-  });
+export function mountClipGroup(s: Session) {
+  const parent = s.rec.groups.walls.parent;
+  if (!parent) throw new Error("house root missing");
+  const group = new ClippingGroup();
+  group.name = "clipGroup";
+  group.enabled = false;
+  group.clipShadows = true;
+  group.clippingPlanes = s.clipPlanes;
+  for (const id of CLIP_TARGETS) group.add(s.rec.groups[id]);
+  parent.add(group);
+  s.clipGroup = group;
 }
 
 export function updateCut(s: Session) {
@@ -51,6 +48,7 @@ export function updateCut(s: Session) {
   const key = `${s.cutDir}:${s.cutValue.toFixed(3)}:${s.roofY.toFixed(3)}`;
   if (key === capKey && s.clipPlanes.length > 0) return;
   capKey = key;
+  s.clipGroup.enabled = true;
   const plane = new THREE.Plane();
   if (s.cutDir === "top") plane.set(new THREE.Vector3(0, -1, 0), s.cutValue);
   else if (s.cutDir === "side") plane.set(new THREE.Vector3(0, 0, -1), s.cutValue);

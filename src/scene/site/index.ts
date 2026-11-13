@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { Reflector } from "three/examples/jsm/objects/Reflector.js";
 import { CARPORT, COURT, LOT, MAIN, POOL, WATER_EDGE } from "../../config";
 import type { HouseGroups, HouseRecord } from "../../types";
 import { addBox, addCyl } from "../geom";
 import type { Materials } from "../materials";
 import { buildCarport, buildDock, buildFence, buildLotDressing } from "./hardscape";
 import { maple, pine, planter, shrub } from "./trees";
+import { createCanalMaterial, createPoolWater } from "./water";
 
 export function buildSite(
   _scene: THREE.Scene,
@@ -181,36 +181,17 @@ export function buildSite(
 export function buildWater(_scene: THREE.Scene, rec: HouseRecord): THREE.Group {
   const poolMeta = rec.poolMeta;
   if (!poolMeta) throw new Error("poolMeta missing — buildSite must run first");
-  const canal = new Reflector(new THREE.PlaneGeometry(160, 90), {
-    textureWidth: 512,
-    textureHeight: 512,
-    color: 0x6a7a88,
-    clipBias: 0.003,
-  });
+  const canal = new THREE.Mesh(new THREE.PlaneGeometry(160, 90), createCanalMaterial());
   canal.rotation.x = -Math.PI / 2;
-  canal.position.set(4, -0.38, WATER_EDGE - 42);
+  canal.position.set(4, -0.37, WATER_EDGE - 42);
   canal.name = "canal";
-  // tint overlay
-  const overlay = new THREE.Mesh(
-    new THREE.PlaneGeometry(160, 90),
-    new THREE.MeshPhysicalMaterial({
-      color: 0x3a5060,
-      roughness: 0.18,
-      metalness: 0.05,
-      transparent: true,
-      opacity: 0.38,
-      envMapIntensity: 1.1,
-      depthWrite: false,
-    }),
-  );
-  overlay.rotation.x = -Math.PI / 2;
-  overlay.position.set(4, -0.36, WATER_EDGE - 42);
-  overlay.name = "canalTint";
-  overlay.renderOrder = 1;
+  canal.renderOrder = 1;
+  canal.castShadow = false;
+  const overlay = canal;
 
   const waterGrp = new THREE.Group();
   waterGrp.name = "water";
-  waterGrp.add(canal, overlay);
+  waterGrp.add(canal);
   const basin = buildPoolBasin(waterGrp, poolMeta);
   rec.water = {
     canal,
@@ -448,7 +429,7 @@ function buildPoolBasin(
   for (let i = 0; i < bands; i++) {
     const zSouth = south - (innerD * i) / bands;
     const zNorth = south - (innerD * (i + 1)) / bands;
-    const len = zSouth - zNorth - 0.02;
+    const len = zSouth - zNorth + 0.02;
     const top = tops[i]!;
     const base = tops[i + 1] ?? floorBottom;
     const thick = top - base;
@@ -518,24 +499,18 @@ function buildPoolBasin(
   caustic.name = "poolCaustic";
   caustic.renderOrder = 2;
 
+  const poolWater = createPoolWater();
   const poolTint = new THREE.Mesh(
     new THREE.PlaneGeometry(innerW - 0.1, innerD - 0.1),
-    new THREE.MeshStandardMaterial({
-      color: 0x1a4246,
-      roughness: 0.2,
-      metalness: 0.16,
-      transparent: true,
-      opacity: 0.22,
-      depthWrite: false,
-      emissive: 0x062422,
-      emissiveIntensity: 0.02,
-      envMapIntensity: 0.7,
-    }),
+    poolWater.material,
   );
   poolTint.rotation.x = -Math.PI / 2;
   poolTint.position.set(px, waterY + 0.012, pz);
   poolTint.name = "poolTint";
   poolTint.renderOrder = 4;
+  poolTint.castShadow = false;
+  poolTint.receiveShadow = false;
+  if (poolWater.reflectionTarget) poolTint.add(poolWater.reflectionTarget);
 
   // North half only. A soft film so the deep end reads as water, not an empty floor.
   const sheenD = innerD * 0.5;
@@ -558,6 +533,7 @@ function buildPoolBasin(
   poolSheen.position.set(px, waterY + 0.02, south - innerD + sheenD / 2);
   poolSheen.name = "poolSheen";
   poolSheen.renderOrder = 5;
+  poolSheen.visible = false;
 
   parent.add(caustic, poolTint, poolSheen);
   return { pool: poolTint, poolTint, poolFloor, poolMid, poolDeep, caustic, poolSheen };

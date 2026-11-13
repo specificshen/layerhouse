@@ -85,8 +85,8 @@ function extrude(shape: THREE.Shape, thick: number, bevel: number): THREE.Buffer
     bevelEnabled: useBevel,
     bevelThickness: useBevel ? bevelThickness : 0,
     bevelSize: useBevel ? Math.min(bevel, thick * 0.45) : 0,
-    bevelSegments: 2,
-    curveSegments: 4,
+    bevelSegments: 3,
+    curveSegments: 6,
     steps: 1,
   });
   const total = depth + (useBevel ? bevelThickness * 2 : 0);
@@ -106,7 +106,7 @@ export function addCushion(
   mat: THREE.Material,
   flags: FormFlags = {},
 ): THREE.Mesh {
-  const bevel = Math.min(0.028, thick * 0.34, w * 0.16, d * 0.16);
+  const bevel = Math.min(0.05, thick * 0.42, w * 0.2, d * 0.2);
   const geo = cached(`cush:${q(w)}:${q(thick)}:${q(d)}:${q(bevel)}`, () => {
     const g = extrude(roundedRect(w, d, Math.max(0.004, bevel * 1.2)), thick, bevel);
     g.rotateX(-Math.PI / 2);
@@ -203,7 +203,7 @@ export function addTaper(
 ): THREE.Mesh {
   const geo = cached(
     `tap:${q(rTop)}:${q(rBot)}:${q(h)}`,
-    () => new THREE.CylinderGeometry(rTop, rBot, h, 8),
+    () => new THREE.CylinderGeometry(rTop, rBot, h, 12),
   );
   return place(parent, geo, x, y, z, mat, flags);
 }

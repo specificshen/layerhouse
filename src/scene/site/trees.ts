@@ -248,7 +248,7 @@ function addSpike(
   const { right, up } = orthoFrame(dir, UP);
   const tip = base.clone().addScaledVector(dir, length);
   const ring: THREE.Vector3[] = [];
-  const sides = 4;
+  const sides = 6;
   for (let k = 0; k < sides; k++) {
     const a = (k / sides) * Math.PI * 2 + 0.4;
     ring.push(
@@ -329,9 +329,9 @@ function addCandle(acc: MeshAccum, tip: THREE.Vector3, rnd: () => number, s: num
 }
 
 function coniferRadius(t: number, s: number) {
-  const flare = Math.pow(1 - t, 5) * 0.55;
-  const taper = Math.pow(1 - t, 0.78);
-  return s * (0.016 + 0.14 * taper + 0.055 * flare);
+  const flare = Math.pow(1 - t, 4.2) * 0.72;
+  const taper = Math.pow(1 - t, 1.15);
+  return s * (0.01 + 0.155 * taper + 0.08 * flare);
 }
 
 interface Spine {
@@ -494,6 +494,17 @@ function addLeafCluster(
     const color =
       nrm.y > 0.7 ? MAPLE_WARM : nrm.y > 0.22 ? MAPLE_LIT : lift < 0 ? MAPLE_DEEP : MAPLE_MID;
     addMapleLeaf(acc, center, nrm, scale * (0.3 + rnd() * 0.12), rnd() * Math.PI * 2, color);
+    if (i % 3 === 0) {
+      const lifted = center.clone().addScaledVector(nrm, scale * 0.1);
+      addMapleLeaf(
+        acc,
+        lifted,
+        nrm,
+        scale * (0.2 + rnd() * 0.08),
+        rnd() * Math.PI * 2,
+        nrm.y > 0.4 ? MAPLE_LIT : MAPLE_MID,
+      );
+    }
   }
 }
 
@@ -613,7 +624,7 @@ export function pine(
   const wood = new MeshAccum();
   const foliage = new MeshAccum();
   const spine = pineSpine(h, s, rnd);
-  addTube(wood, spine.pts, spine.rad, 8);
+  addTube(wood, spine.pts, spine.rad, 12);
   addRoots(wood, s, rnd);
 
   const gapAz = rnd() * Math.PI * 2;
@@ -709,7 +720,7 @@ export function maple(
     new THREE.Vector3(Math.cos(leanAz + 1.4) * s * 0.035, 0, Math.sin(leanAz + 1.4) * s * 0.035),
   );
   const rBase = s * 0.115;
-  addTube(wood, [base, mid, top], [rBase * 1.3, rBase * 0.72, rBase * 0.42], 8);
+  addTube(wood, [base, mid, top], [rBase * 1.55, rBase * 0.58, rBase * 0.22], 12);
   addRoots(wood, s * 0.8, rnd);
 
   const leaderDir = new THREE.Vector3(

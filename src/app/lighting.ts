@@ -1,10 +1,34 @@
 import * as THREE from "three";
+import type { CubeRenderTarget } from "three/webgpu";
 import { ROOF_LIFT, TOD } from "../config";
 import { setGrassColor, setLampIntensity } from "../scene/materials";
 import { applySky, placeSun } from "../scene/sky";
 import { setNeighborGlow } from "../scene/site/neighbors";
 import type { TimeId } from "../types";
 import type { Session } from "./session";
+
+const ROOM_BOUNCE: ReadonlyArray<readonly [number, number, number]> = [
+  [-4.2, 1.65, 1.8],
+  [4.6, 1.7, 1.4],
+  [-4.4, 1.55, -7.4],
+  [1.1, 4.85, -6.1],
+];
+
+export function addRoomBounce(parent: THREE.Object3D) {
+  for (const [x, y, z] of ROOM_BOUNCE) {
+    const light = new THREE.PointLight(0xfff0dc, 0, 5.2, 2);
+    light.name = "roomBounce";
+    light.position.set(x, y, z);
+    light.castShadow = false;
+    parent.add(light);
+  }
+}
+
+function releaseTarget(target: CubeRenderTarget | null) {
+  if (!target) return;
+  target.texture.dispose();
+  target.dispose();
+}
 
 function hasEmissive(mat: THREE.Material): mat is THREE.MeshStandardMaterial {
   return "emissive" in mat && (mat as THREE.MeshStandardMaterial).emissive instanceof THREE.Color;
@@ -46,7 +70,7 @@ export function syncOpenRoofLighting(s: Session) {
   s.sun.intensity = t.sunInt * (1 - open * 0.45);
   s.scene.environmentIntensity =
     (s.timeId === "night" ? 0.32 : s.timeId === "day" ? 0.7 : 0.5) * (1 - open * 0.82);
-  const floorEnv = 0.4 * (1 - open * 0.9);
+  const floorEnv = 0.62 * (1 - open * 0.9);
   s.mats.floor.envMapIntensity = floorEnv;
   const floorCol = 1 - open * 0.16;
   s.mats.floor.color.setRGB(floorCol, floorCol * 0.96, floorCol * 0.9);
@@ -59,15 +83,17 @@ export function syncOpenRoofLighting(s: Session) {
   const baseBloom = s.timeId === "night" ? 0.34 : s.timeId === "day" ? 0.08 : 0.22;
   s.bloom.strength = baseBloom * (1 - open * 0.45);
   s.bloom.threshold = s.timeId === "night" ? 0.72 : 0.88;
+  s.bloom.radius = 0.35;
   if (s.rec.water) {
     const glow = t.poolGlow;
     const tint = s.rec.water.poolTint.material;
     tint.toneMapped = true;
-    tint.opacity = 0.16 + glow * 0.05;
-    tint.color.setHex(glow > 0.5 ? 0x16383e : 0x2a5c5e);
+    tint.opacity = 0.7;
+    tint.color.setHex(glow > 0.5 ? 0x12383c : 0x1c4e52);
     tint.emissive.setHex(0x08302e);
-    tint.emissiveIntensity = 0.02 + glow * 0.05;
-    tint.roughness = 0.2;
+    tint.emissiveIntensity = 0.03 + glow * 0.05;
+    tint.roughness = 0.07;
+    tint.metalness = 0.04;
     const fl = s.rec.water.poolFloor.material;
     fl.toneMapped = true;
     fl.color.setHex(glow > 0.5 ? 0x2a6e68 : 0x4a948c);
@@ -87,13 +113,9 @@ export function syncOpenRoofLighting(s: Session) {
     const cau = s.rec.water.caustic.material;
     cau.opacity = 0.1 + glow * 0.08;
     cau.emissiveIntensity = 0.04 + glow * 0.14;
-    const sheen = s.rec.water.poolSheen.material;
-    // Open-roof exposure crushes a tone-mapped film back to black.
-    sheen.toneMapped = false;
-    sheen.opacity = lit ? 0.36 : 0.16;
-    sheen.color.setHex(0xd5ebe3);
-    sheen.emissive.setHex(0x9ecfc2);
-    sheen.emissiveIntensity = lit ? 0.22 : 0.05;
+    const sheen = s.rec.water.poolSheen;
+    sheen.visible = false;
+    sheen.material.opacity = 0;
   }
   if (s.mode === "walk") {
     s.renderer.toneMappingExposure *= 0.72;
@@ -106,6 +128,9 @@ export function syncOpenRoofLighting(s: Session) {
       l.intensity *= 0.34 * (Number.isFinite(walkScale) ? walkScale : 1);
     }
   }
+  s.bloomNode.strength.value = s.bloom.strength;
+  s.bloomNode.threshold.value = s.bloom.threshold;
+  s.bloomNode.radius.value = s.bloom.radius;
 }
 
 function syncLawnBands(s: Session) {
@@ -125,6 +150,10 @@ function namedLights(s: Session, id: TimeId) {
     if (!(o instanceof THREE.PointLight)) return;
     if (o.name === "pathLight") o.intensity = t.lamps * 1.7;
     if (o.name === "poolLight") o.intensity = t.poolGlow * (id === "day" ? 0.08 : 0.85);
+    if (o.name === "roomBounce") {
+      o.intensity = id === "day" ? 0.24 : id === "dawn" ? 0.16 : id === "dusk" ? 0.12 : 0.05;
+      o.color.setHex(id === "day" ? 0xd5e4f4 : id === "night" ? 0xffd8b0 : 0xffc8a4);
+    }
   });
   s.mats.pathLight.emissiveIntensity = t.lamps * 1.8;
   s.mats.poolTile.emissiveIntensity = t.poolGlow * (id === "day" ? 0.03 : 0.26);
@@ -157,19 +186,23 @@ export function applyTime(s: Session, id: TimeId) {
   syncLawnBands(s);
   namedLights(s, id);
   if (s.rec.water) s.rec.water.overlay.material.color.setHex(t.waterTint);
-  syncOpenRoofLighting(s);
-  requestAnimationFrame(() => {
+  releaseTarget(s.envTarget);
+  s.envTarget = null;
+  s.scene.environment = null;
+  if (new URLSearchParams(location.search).get("noenv") !== "1") {
+    const tmp = new THREE.Scene();
+    const skyClone = s.sky.mesh.clone();
+    skyClone.material = s.sky.mat;
+    tmp.add(skyClone);
     try {
-      const tmp = new THREE.Scene();
-      const skyClone = s.sky.mesh.clone();
-      skyClone.material = s.sky.mat;
-      tmp.add(skyClone);
-      const env = s.pmrem.fromScene(tmp, 0.04, 0.1, 20);
+      const env = s.pmrem.fromScene(tmp, 0.06, 1, 600);
+      s.envTarget = env;
       s.scene.environment = env.texture;
-    } catch {
-      /* environment map is optional */
+    } catch (err) {
+      console.error("pmrem failed", err);
     }
-  });
+  }
+  syncOpenRoofLighting(s);
   document
     .querySelectorAll<HTMLElement>("[data-time]")
     .forEach((b) => b.classList.toggle("active", b.dataset.time === id));

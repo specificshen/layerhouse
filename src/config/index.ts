@@ -12,6 +12,20 @@ export const STATS = {
   tags: "庭院水池 · 临水栈道 · 书房",
 };
 
+/**
+ * Effects on the WebGPU (and WebGL2 fallback) pipeline.
+ * `?fx=low` turns the expensive ones off when a machine can't hold frame time.
+ */
+export const QUALITY = {
+  ao: true,
+  ssr: true,
+  bloom: true,
+  poolReflection: true,
+  poolReflectScale: 0.5,
+  aoResolution: 0.5,
+  ssrResolution: 0.5,
+};
+
 export const EYE = 1.62;
 export const SLAB = 0.26;
 export const WALL_T = 0.2;

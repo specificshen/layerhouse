@@ -35,7 +35,7 @@ function legs(
 function lounge(
   parent: THREE.Object3D,
   pal: FurnishPalette,
-  rec: HouseRecord,
+  _rec: HouseRecord,
   x: number,
   y: number,
   z: number,
@@ -48,8 +48,8 @@ function lounge(
   const n = len > 1.5 ? 3 : 1;
   const armT = 0.12;
   legs(g, -len / 2 + 0.1, -0.28, len / 2 - 0.1, 0.3, 0.15, pal.walnut, 0.03, 0.016);
-  addBox(g, len - 0.2, 0.045, 0.58, 0, 0.17, 0.0, pal.oakDark, rec, {});
-  addCushion(g, len - 0.26, 0.028, 0.6, 0, 0.21, 0.03, pal.oak, { noCast: true });
+  addCushion(g, len - 0.16, 0.055, 0.64, 0, 0.185, 0.02, pal.oakDark);
+  addCushion(g, len - 0.26, 0.028, 0.6, 0, 0.23, 0.03, pal.oak, { noCast: true });
 
   const inner = len - armT * 2 - 0.04;
   const seatW = inner / n;
@@ -58,7 +58,7 @@ function lounge(
     addCushion(g, seatW - 0.03, 0.15, 0.6, px, 0.325, 0.06, pal.fabric);
     addCushion(g, seatW - 0.045, 0.4, 0.13, px, 0.56, -0.2, pal.moss, { rotX: -0.42 });
   }
-  addBox(g, len - 0.22, 0.4, 0.04, 0, 0.46, -0.34, pal.oakDark, rec, {});
+  addArch(g, len - 0.2, 0.46, 0.07, 0.14, 0, 0.5, -0.3, pal.oakDark);
   addRoll(g, 0.038, len - 0.28, 0, 0.72, -0.33, pal.walnut);
 
   for (const sx of [-1, 1]) {

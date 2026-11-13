@@ -1,10 +1,22 @@
 import type * as THREE from "three";
-import type { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import type { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import type BloomNode from "three/addons/tsl/display/BloomNode.js";
+import type {
+  ClippingGroup,
+  CubeRenderTarget,
+  PMREMGenerator,
+  PostProcessing,
+  WebGPURenderer,
+} from "three/webgpu";
 import type { Materials } from "../scene/materials";
 import type { SkyHandle } from "../scene/sky";
 import type { CutDir, HouseRecord, LayerId, Mode, TimeId, ViewMode } from "../types";
+
+export interface BloomState {
+  strength: number;
+  radius: number;
+  threshold: number;
+}
 
 export interface CamAnim {
   active: boolean;
@@ -28,12 +40,14 @@ export interface WalkState {
 
 export interface Session {
   canvas: HTMLCanvasElement;
-  renderer: THREE.WebGLRenderer;
+  renderer: WebGPURenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   orbit: OrbitControls;
-  composer: EffectComposer;
-  bloom: UnrealBloomPass;
+  pipeline: PostProcessing;
+  bloom: BloomState;
+  bloomNode: BloomNode;
+  backendName: string;
   hemi: THREE.HemisphereLight;
   amb: THREE.AmbientLight;
   sun: THREE.DirectionalLight;
@@ -45,10 +59,12 @@ export interface Session {
   neighbors: THREE.Group;
   waterGrp: THREE.Group;
   clipPlanes: THREE.Plane[];
+  clipGroup: ClippingGroup;
   clipCache: Map<THREE.Material, THREE.Material>;
   capGroup: THREE.Group;
   sectionBox: THREE.Group;
-  pmrem: THREE.PMREMGenerator;
+  pmrem: PMREMGenerator;
+  envTarget: CubeRenderTarget | null;
   cam: CamAnim;
   walk: WalkState;
   mode: Mode;

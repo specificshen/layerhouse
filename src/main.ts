@@ -1,15 +1,13 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { PMREMGenerator, WebGPURenderer } from "three/webgpu";
 import { lerpCam, orbitPreset, tickCamera } from "./app/camera";
 import { mustEl } from "./app/dom";
 import { bindHud, closeHelp, isHelpOpen, syncModeChrome } from "./app/hud";
 import { createHotspots } from "./app/hotspots";
-import { applyTime, syncOpenRoofLighting } from "./app/lighting";
-import { CLIP_TARGETS, cutRange, enableClipping, updateCut } from "./app/section";
+import { addRoomBounce, applyTime, syncOpenRoofLighting } from "./app/lighting";
+import { createPipeline } from "./app/post";
+import { cutRange, mountClipGroup, updateCut } from "./app/section";
 import type { Session } from "./app/session";
 import { setHouseVisibility } from "./app/visibility";
 import {
@@ -21,7 +19,7 @@ import {
   updateDoors,
   updateWalk,
 } from "./app/walk";
-import { CAM, EYE, ROOF_LIFT } from "./config";
+import { CAM, EYE, QUALITY, ROOF_LIFT } from "./config";
 import { furnishHouse } from "./scene/furnish";
 import { buildHouse, heightAt } from "./scene/house";
 import { createMaterials, createTextures } from "./scene/materials";
@@ -31,12 +29,20 @@ import { buildNeighbors } from "./scene/site/neighbors";
 import { buildSystems } from "./scene/systems";
 import type { CutDir, DemoApi, LayerId, Vec3, ViewMode } from "./types";
 
+const params = new URLSearchParams(location.search);
+if (params.get("fx") === "low") {
+  QUALITY.ao = false;
+  QUALITY.ssr = false;
+  QUALITY.poolReflection = false;
+}
+const forceWebGL = params.get("backend") === "webgl";
+
 const canvas = mustEl<HTMLCanvasElement>("c");
-const renderer = new THREE.WebGLRenderer({
+const renderer = new WebGPURenderer({
   canvas,
-  antialias: true,
+  antialias: params.get("msaa") !== "0",
   powerPreference: "high-performance",
-  stencil: true,
+  forceWebGL,
 });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -45,7 +51,6 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.88;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.localClippingEnabled = true;
 renderer.setClearColor(0x1a2030, 1);
 
 const scene = new THREE.Scene();
@@ -67,6 +72,7 @@ orbit.mouseButtons = {
 };
 
 const sky = createSky();
+if (params.get("nosky") === "1") sky.mesh.visible = false;
 scene.add(sky.mesh);
 const sunDisc = createSunDisc();
 scene.add(sunDisc);
@@ -77,7 +83,7 @@ const amb = new THREE.AmbientLight(0x4a4058, 0.22);
 scene.add(amb);
 const sun = new THREE.DirectionalLight(0xff8a62, 0.95);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(params.get("shadow") === "1024" ? 1024 : 2048, params.get("shadow") === "1024" ? 1024 : 2048);
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 80;
 sun.shadow.camera.left = -28;
@@ -112,16 +118,8 @@ scene.add(neighbors);
 const waterGrp = buildWater(scene, rec);
 scene.add(waterGrp);
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(
-  new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.22,
-  0.35,
-  0.88,
-);
-composer.addPass(bloom);
-composer.addPass(new OutputPass());
+const bloom = { strength: 0.22, radius: 0.35, threshold: 0.88 };
+const { pipeline, bloomNode } = createPipeline(renderer, scene, camera, bloom);
 
 const session: Session = {
   canvas,
@@ -129,8 +127,10 @@ const session: Session = {
   scene,
   camera,
   orbit,
-  composer,
+  pipeline,
   bloom,
+  bloomNode,
+  backendName: forceWebGL ? "WebGL2" : "WebGPU",
   hemi,
   amb,
   sun,
@@ -142,10 +142,12 @@ const session: Session = {
   neighbors,
   waterGrp,
   clipPlanes: [],
+  clipGroup: null as unknown as Session["clipGroup"],
   clipCache: new Map(),
   capGroup: new THREE.Group(),
   sectionBox: new THREE.Group(),
-  pmrem: new THREE.PMREMGenerator(renderer),
+  pmrem: new PMREMGenerator(renderer),
+  envTarget: null,
   cam: {
     active: false,
     t: 1,
@@ -178,7 +180,8 @@ scene.add(session.capGroup);
 scene.add(session.sectionBox);
 rec.roofGroup.position.y = ROOF_LIFT;
 
-for (const id of CLIP_TARGETS) enableClipping(session, rec.groups[id]);
+mountClipGroup(session);
+addRoomBounce(scene);
 
 const hotspots = createHotspots(scene, camera, canvas, rec, () => session.mode);
 
@@ -193,6 +196,7 @@ function setMode(next: ViewMode) {
   if (next === "cut") updateCut(session);
   else {
     session.clipPlanes.length = 0;
+    session.clipGroup.enabled = false;
     session.capGroup.clear();
   }
   if (next === "walk") enterWalk(session);
@@ -255,12 +259,11 @@ window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  composer.setSize(window.innerWidth, window.innerHeight);
-  bloom.setSize(window.innerWidth, window.innerHeight);
 });
 
 const clock = new THREE.Clock();
 let roofTarget = ROOF_LIFT;
+let lightKey = "";
 
 function animate() {
   requestAnimationFrame(animate);
@@ -268,18 +271,28 @@ function animate() {
   roofTarget = session.mode === "exploded" ? ROOF_LIFT : 0;
   session.roofY += (roofTarget - session.roofY) * Math.min(1, dt * 5.5);
   rec.roofGroup.position.y = session.roofY;
-  syncOpenRoofLighting(session);
+  const nextKey = `${session.mode}|${session.timeId}|${session.roofY.toFixed(3)}`;
+  if (nextKey !== lightKey) {
+    lightKey = nextKey;
+    syncOpenRoofLighting(session);
+  }
   if (session.mode === "cut") updateCut(session);
   tickCamera(session, dt);
   if (session.walk.on) updateWalk(session, dt);
   else orbit.update();
   updateDoors(session, dt);
   hotspots.updateLabel();
-  composer.render();
+  try {
+    if (params.get("raw") === "1") renderer.render(scene, camera);
+    else pipeline.render();
+  } catch (err) {
+    console.error("render failed", err);
+  }
 }
 
 function hideLoader() {
-  const el = mustEl<HTMLElement>("loader");
+  const el = document.getElementById("loader");
+  if (!el) return;
   el.classList.add("gone");
   setTimeout(() => {
     el.remove();
@@ -287,12 +300,26 @@ function hideLoader() {
 }
 mustEl<HTMLElement>("skip").addEventListener("click", hideLoader);
 
-applyTime(session, "dusk");
-setMode("exploded");
-setHouseVisibility(session);
-mustEl<HTMLElement>("loadbar").style.width = "100%";
-animate();
-setTimeout(hideLoader, 900);
+async function start() {
+  await renderer.init();
+  const gpuBackend = renderer.backend as { isWebGPUBackend?: boolean };
+  session.backendName = gpuBackend.isWebGPUBackend === true ? "WebGPU" : "WebGL2";
+  mustEl<HTMLElement>("gfx").textContent = session.backendName;
+  applyTime(session, "dusk");
+  setMode("exploded");
+  setHouseVisibility(session);
+  if (params.get("min") === "1") {
+    for (const group of Object.values(rec.groups)) group.visible = false;
+    neighbors.visible = false;
+    waterGrp.visible = false;
+    sun.castShadow = false;
+    rec.groups.walls.visible = true;
+  }
+  mustEl<HTMLElement>("loadbar").style.width = "100%";
+  animate();
+  setTimeout(hideLoader, 400);
+}
+void start();
 
 const demo: DemoApi = {
   setMode,
