@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { ClipBox, LayerId, OrientedClip } from "../types";
 import type { Session } from "./session";
-import { mustEl } from "./dom";
+import { mustEl } from "../ui/dom";
 
 const EDGES: Array<[number, number]> = [
   [0, 1],
