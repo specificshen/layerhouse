@@ -48,7 +48,7 @@ export function updateCut(s: Session) {
     capKey = "";
     return;
   }
-  const key = `${s.cutDir}:${s.cutValue.toFixed(3)}:${s.roofY.toFixed(3)}`;
+  const key = `${s.cutDir}:${s.cutValue.toFixed(3)}:${s.roofY.toFixed(3)}:${s.capColors ? 1 : 0}`;
   if (key === capKey && s.clipPlanes.length > 0) return;
   capKey = key;
   const plane = new THREE.Plane();
@@ -75,8 +75,15 @@ function pushAabb(
   yLift: number,
   axis: "x" | "y" | "z",
   c: number,
+  capColor: number | undefined,
+  useColors: boolean,
 ) {
   for (const b of boxes) {
+    if (useColors) {
+      if (capColor === undefined) {
+        if (b.capColor !== undefined) continue;
+      } else if (b.capColor !== capColor) continue;
+    }
     const minY = b.min.y + yLift;
     const maxY = b.max.y + yLift;
     if (axis === "y") {
@@ -171,9 +178,15 @@ function rebuildCaps(s: Session, plane: THREE.Plane) {
   s.capGroup.clear();
   const axis = axisOf(plane);
   const lift = s.rec.roofGroup.position.y;
+  const useColors = s.capColors;
+  const colors = new Set<number>();
+  if (useColors) {
+    for (const box of s.rec.clipBoxes) if (box.capColor !== undefined) colors.add(box.capColor);
+    for (const box of s.rec.roofClipBoxes) if (box.capColor !== undefined) colors.add(box.capColor);
+  }
   const out: number[] = [];
-  pushAabb(out, s.rec.clipBoxes, 0, axis, s.cutValue);
-  pushAabb(out, s.rec.roofClipBoxes, lift, axis, s.cutValue);
+  pushAabb(out, s.rec.clipBoxes, 0, axis, s.cutValue, undefined, useColors);
+  pushAabb(out, s.rec.roofClipBoxes, lift, axis, s.cutValue, undefined, useColors);
   for (const clip of s.rec.orientedClips) {
     const poly = obbPolygon(clip, plane, lift);
     if (poly.length < 3) continue;
@@ -184,11 +197,30 @@ function rebuildCaps(s: Session, plane: THREE.Plane) {
       out.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
     }
   }
-  if (!out.length) return;
+  addCapMesh(s, out, s.mats.sectionCap);
+  if (!useColors) return;
+  for (const color of colors) {
+    const tinted: number[] = [];
+    pushAabb(tinted, s.rec.clipBoxes, 0, axis, s.cutValue, color, true);
+    pushAabb(tinted, s.rec.roofClipBoxes, lift, axis, s.cutValue, color, true);
+    const mat = new THREE.MeshBasicMaterial({
+      color,
+      toneMapped: false,
+      side: THREE.DoubleSide,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    addCapMesh(s, tinted, mat);
+  }
+}
+
+function addCapMesh(s: Session, positions: number[], material: THREE.Material) {
+  if (positions.length < 9) return;
   const geom = new THREE.BufferGeometry();
-  geom.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geom.computeVertexNormals();
-  const mesh = new THREE.Mesh(geom, s.mats.sectionCap);
+  const mesh = new THREE.Mesh(geom, material);
   mesh.renderOrder = 2;
   s.capGroup.add(mesh);
 }

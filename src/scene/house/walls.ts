@@ -33,7 +33,17 @@ export function defineWalls(): Wall[] {
     openings: [
       { a0: -6.45, a1: -4.05, y0: 0.95, y1: 2.58, type: "window", style: "fixed" },
       { a0: -3.9, a1: -2.45, y0: 0.95, y1: 2.58, type: "window", style: "fixed" },
-      { a0: -2.15, a1: 0.2, y0: y0, y1: 2.58, type: "door", style: "pivot" },
+      // D01 pivot, hinge west, swings north into the foyer.
+      {
+        a0: -2.15,
+        a1: 0.2,
+        y0: y0,
+        y1: 2.58,
+        type: "door",
+        style: "pivot",
+        hinge: "a0",
+        openSign: 1,
+      },
       { a0: 0.2, a1: 0.72, y0: y0, y1: 2.58, type: "window", style: "sidelight" },
       { a0: 2.15, a1: 4.25, y0: 1.1, y1: 2.45, type: "window", style: "fixed" },
       { a0: 4.4, a1: 6.45, y0: 1.1, y1: 2.45, type: "window", style: "fixed" },
@@ -58,6 +68,7 @@ export function defineWalls(): Wall[] {
     openings: [
       { a0: 0.15, a1: 5.25, y0: y0, y1: 2.98, type: "window", style: "slider" },
       { a0: 5.45, a1: 6.5, y0: 1.1, y1: 2.45, type: "window", style: "fixed" },
+      // D02 balcony slider. No swing arc on A-03.
       { a0: 0.55, a1: 3.55, y0: Y_L2_TOP, y1: 5.78, type: "door", style: "slider" },
       { a0: 3.85, a1: 6.5, y0: 3.98, y1: 5.78, type: "window", style: "band" },
     ],
@@ -77,7 +88,17 @@ export function defineWalls(): Wall[] {
     finish: "stucco",
     openings: [
       { a0: -1.5, a1: 1.4, y0: 1.1, y1: 2.45, type: "window", style: "fixed" },
-      { a0: 3.2, a1: 4.3, y0: y0, y1: 2.35, type: "door", style: "side" },
+      // D03 side door, hinge north, swings west into the room.
+      {
+        a0: 3.2,
+        a1: 4.3,
+        y0: y0,
+        y1: 2.35,
+        type: "door",
+        style: "side",
+        hinge: "a0",
+        openSign: -1,
+      },
       { a0: 4.55, a1: 5.9, y0: 1.1, y1: 2.45, type: "window", style: "fixed" },
       { a0: -1.7, a1: 1.6, y0: 3.98, y1: 5.78, type: "window", style: "band" },
       { a0: 2.2, a1: 5.9, y0: 3.98, y1: 5.78, type: "window", style: "band" },
@@ -133,7 +154,17 @@ export function defineWalls(): Wall[] {
     kind: "ext",
     finish: "cedar",
     openings: [
-      { a0: -6.0, a1: -3.2, y0: y0, y1: 2.5, type: "door", style: "garden" },
+      // D04 garden door, hinge west, swings south into the wing.
+      {
+        a0: -6.0,
+        a1: -3.2,
+        y0: y0,
+        y1: 2.5,
+        type: "door",
+        style: "garden",
+        hinge: "a0",
+        openSign: -1,
+      },
       { a0: -7.0, a1: -6.15, y0: 1.05, y1: 2.35, type: "window", style: "fixed" },
       { a0: -3.0, a1: -1.85, y0: 1.05, y1: 2.35, type: "window", style: "fixed" },
     ],
@@ -186,7 +217,17 @@ export function defineWalls(): Wall[] {
     kind: "int",
     finish: "interior",
     openings: [
-      { a0: 2.05, a1: 2.85, y0, y1: 2.2, type: "door", style: "interior" }, // to powder / hall
+      // D05 into the guest bath, hinge south, swings west clear of the stair.
+      {
+        a0: 2.05,
+        a1: 2.85,
+        y0,
+        y1: 2.2,
+        type: "door",
+        style: "interior",
+        hinge: "a1",
+        openSign: 1,
+      },
     ],
   });
   // Stair east
@@ -202,8 +243,28 @@ export function defineWalls(): Wall[] {
     kind: "int",
     finish: "interior",
     openings: [
-      { a0: 3.55, a1: 4.4, y0: Y_L2_TOP, y1: 5.5, type: "door", style: "interior" }, // L2 bath
-      { a0: 2.9, a1: 3.7, y0, y1: 2.2, type: "door", style: "interior" }, // GF to kitchen
+      // D06 L2 bath, hinge north, swings west into the bath.
+      {
+        a0: 3.55,
+        a1: 4.4,
+        y0: Y_L2_TOP,
+        y1: 5.5,
+        type: "door",
+        style: "interior",
+        hinge: "a0",
+        openSign: -1,
+      },
+      // D07 kitchen, hinge north, swings east clear of the stair.
+      {
+        a0: 2.9,
+        a1: 3.7,
+        y0,
+        y1: 2.2,
+        type: "door",
+        style: "interior",
+        hinge: "a0",
+        openSign: 1,
+      },
     ],
   });
   // Powder enclosure
@@ -218,7 +279,19 @@ export function defineWalls(): Wall[] {
     t: TI,
     kind: "int",
     finish: "interior",
-    openings: [{ a0: -0.95, a1: -0.25, y0, y1: 2.15, type: "door", style: "interior" }],
+    openings: [
+      // D08 foyer to guest bath, hinge west, swings north into the bath.
+      {
+        a0: -0.95,
+        a1: -0.25,
+        y0,
+        y1: 2.15,
+        type: "door",
+        style: "interior",
+        hinge: "a0",
+        openSign: 1,
+      },
+    ],
   });
   walls.push({
     id: "int-powder-n",
@@ -245,7 +318,19 @@ export function defineWalls(): Wall[] {
     t: TI,
     kind: "int",
     finish: "interior",
-    openings: [{ a0: -3.55, a1: -2.75, y0, y1: 2.15, type: "door", style: "interior" }],
+    openings: [
+      // D09 guest bedroom, hinge east, swings north into the bedroom.
+      {
+        a0: -3.55,
+        a1: -2.75,
+        y0,
+        y1: 2.15,
+        type: "door",
+        style: "interior",
+        hinge: "a1",
+        openSign: -1,
+      },
+    ],
   });
   walls.push({
     id: "int-guest-bath-e",
@@ -258,7 +343,19 @@ export function defineWalls(): Wall[] {
     t: TI,
     kind: "int",
     finish: "interior",
-    openings: [{ a0: -3.7, a1: -2.95, y0, y1: 2.15, type: "door", style: "interior" }],
+    openings: [
+      // D10 guest bath, hinge south, swings west into the bath.
+      {
+        a0: -3.7,
+        a1: -2.95,
+        y0,
+        y1: 2.15,
+        type: "door",
+        style: "interior",
+        hinge: "a1",
+        openSign: 1,
+      },
+    ],
   });
 
   // —— Interior L2 ——
@@ -274,7 +371,19 @@ export function defineWalls(): Wall[] {
     t: TI,
     kind: "int",
     finish: "interior",
-    openings: [{ a0: -0.3, a1: 0.55, y0: Y_L2_TOP, y1: 5.5, type: "door", style: "interior" }],
+    openings: [
+      // D11 master, hinge north, swings west into the bedroom.
+      {
+        a0: -0.3,
+        a1: 0.55,
+        y0: Y_L2_TOP,
+        y1: 5.5,
+        type: "door",
+        style: "interior",
+        hinge: "a0",
+        openSign: -1,
+      },
+    ],
   });
   // Master bath south-west
   walls.push({
@@ -288,10 +397,24 @@ export function defineWalls(): Wall[] {
     t: TI,
     kind: "int",
     finish: "interior",
-    openings: [{ a0: -6.3, a1: -5.5, y0: Y_L2_TOP, y1: 5.5, type: "door", style: "interior" }],
+    openings: [
+      // D12 master bath, hinge west, swings south into the bath.
+      {
+        a0: -6.3,
+        a1: -5.5,
+        y0: Y_L2_TOP,
+        y1: 5.5,
+        type: "door",
+        style: "interior",
+        hinge: "a0",
+        openSign: -1,
+      },
+    ],
   });
   walls.push({
-    id: "int-mcloset",
+    // Partition of the master bath (basin, toilet, tub), not a closet.
+    // The closet is the open niche to the east, about x −2.35 to −0.15.
+    id: "int-mbath-part",
     axis: "x",
     pos: -4.35,
     a0: 3.25,
@@ -301,7 +424,19 @@ export function defineWalls(): Wall[] {
     t: TI,
     kind: "int",
     finish: "interior",
-    openings: [{ a0: 3.35, a1: 4.15, y0: Y_L2_TOP, y1: 5.5, type: "door", style: "interior" }],
+    openings: [
+      // D13 into the master bath, hinge north, swings west.
+      {
+        a0: 3.35,
+        a1: 4.15,
+        y0: Y_L2_TOP,
+        y1: 5.5,
+        type: "door",
+        style: "interior",
+        hinge: "a0",
+        openSign: -1,
+      },
+    ],
   });
   // L2 hall bath south of stair (x 0.52–2.52 already have walls; close south & a door is on stair-e)
   walls.push({

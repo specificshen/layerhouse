@@ -1,5 +1,15 @@
 import * as THREE from "three";
-import { MAIN, WING, Y_GF_TOP, Y_GF_CEIL, Y_L2_TOP, Y_L2_CEIL, Y_L2_WALL_TOP } from "../../config";
+import {
+  FINISH_T,
+  MAIN,
+  STRUCT_T,
+  WING,
+  Y_GF_TOP,
+  Y_GF_CEIL,
+  Y_L2_TOP,
+  Y_L2_CEIL,
+  Y_L2_WALL_TOP,
+} from "../../config";
 import { addBox, addCyl, buildWall, BoxBatch, CylBatch, runAlong, solidRects } from "../geom";
 import type { Materials } from "../materials";
 import type { HouseGroups, HouseRecord, Wall } from "../../types";
@@ -135,7 +145,8 @@ function buildFraming(parent: THREE.Object3D, rec: HouseRecord, mats: Materials)
 
   // Floor joists L2, span north-south in main
   const jSpace = 0.4;
-  const jy = Y_L2_TOP - 0.16;
+  // Sit in the L2 structural slab (+3.080 to +3.310), clear of the finish and the soffit.
+  const jy = Y_L2_TOP - FINISH_T - STRUCT_T / 2;
   const jh = 0.22,
     jw = 0.05;
   for (const x of runAlong(MAIN.x0 + 0.15, MAIN.x1 - 0.15, jSpace, 0)) {

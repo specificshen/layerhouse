@@ -13,7 +13,11 @@ export const STATS = {
 };
 
 export const EYE = 1.62;
+/** Full floor assembly in section (structure + 30 mm finish). */
 export const SLAB = 0.26;
+export const FINISH_T = 0.03;
+/** Concrete stops 30 mm under FFL so the finish is not buried in the slab. */
+export const STRUCT_T = SLAB - FINISH_T;
 export const WALL_T = 0.2;
 export const INT_WALL_T = 0.14;
 export const FLOOR_H = 3.2;
