@@ -9,6 +9,7 @@
     "dev": "bun src/index.html --port=5173",
     "check": "bun check",
     "fmt": "bun fmt",
+    "test": "bun test",
     "build": "bun build --compile --target=browser --minify ./src/index.html --outdir=dist"
   },
   "dependencies": {
