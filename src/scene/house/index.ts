@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { MAIN, SLAB, WALL_T, WING, Y_GF_CEIL, Y_GF_TOP, Y_L2_CEIL, Y_L2_TOP } from "../../config";
-import { addBox, buildWall } from "../geom";
+import { addBox, buildWall, solidRects } from "../geom";
+import type { Wall } from "../../types";
 import type { Materials } from "../materials";
 import type {
   ClipBox,
@@ -346,8 +347,7 @@ export function buildHouse(mats: Materials): HouseRecord {
   // ——— Fenestration ———
   buildFenestration(groups.fenestration, wallsData, mats, rec);
 
-  // Warm interior fill planes just inside large glass (helps dusk/night glow)
-  addWarmFills(groups.walls, mats, rec);
+  addBaseboards(groups.walls, wallsData, mats, rec);
 
   // ——— Stairs ———
   buildStairs(groups.walls, groups.furniture, mats, rec, well);
@@ -423,41 +423,37 @@ export function buildHouse(mats: Materials): HouseRecord {
   return rec;
 }
 
-function addWarmFills(parent: THREE.Object3D, mats: Materials, rec: HouseRecord) {
-  // Just inside large glazed openings, a faintly emissive plane
-  const t = 0.02;
-  // North slider GF
-  addBox(parent, 5.0, 2.7, t, 2.7, 1.5, MAIN.z0 + 0.18, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
-  // South living windows
-  addBox(parent, 2.3, 1.5, t, -5.25, 1.75, MAIN.z1 - 0.18, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
-  addBox(parent, 1.3, 1.5, t, -3.17, 1.75, MAIN.z1 - 0.18, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
-  // South upper band and east dining windows
-  addBox(parent, 10.2, 1.55, t, 0.2, 4.85, MAIN.z1 - 0.18, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
-  addBox(parent, t, 1.35, 2.4, MAIN.x1 - 0.18, 1.75, 4.2, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
-  addBox(parent, t, 1.55, 3.4, MAIN.x1 - 0.18, 4.85, 4.0, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
-  // Wing, north glazing toward the water
-  addBox(parent, 3.6, 1.55, t, -4.6, 1.7, WING.z0 + 0.18, mats.warmFill, rec, {
-    clip: true,
-    noShadow: true,
-  });
+function addBaseboards(parent: THREE.Object3D, walls: Wall[], mats: Materials, rec: HouseRecord) {
+  const h = 0.1;
+  const d = 0.03;
+  for (const w of walls) {
+    for (const floorY of [Y_GF_TOP, Y_L2_TOP]) {
+      if (w.y0 > floorY + 0.05 || w.y1 < floorY + h) continue;
+      const y = floorY + h / 2;
+      const spans = solidRects(w.a0, w.a1, floorY, floorY + h, w.openings);
+      const inward = w.axis === "z" ? Math.sign(2 - w.pos) || -1 : Math.sign(-w.pos) || 1;
+      const faces = w.kind === "int" ? [-1, 1] : [inward];
+      for (const span of spans) {
+        const len = span.a1 - span.a0;
+        if (len < 0.3) continue;
+        const mid = (span.a0 + span.a1) / 2;
+        for (const face of faces) {
+          const inset = face * (w.t / 2 + d / 2 - 0.004);
+          if (w.axis === "z") {
+            addBox(parent, len, h, d, mid, y, w.pos + inset, mats.woodDark, rec, {
+              clip: true,
+              noCast: true,
+            });
+          } else {
+            addBox(parent, d, h, len, w.pos + inset, y, mid, mats.woodDark, rec, {
+              clip: true,
+              noCast: true,
+            });
+          }
+        }
+      }
+    }
+  }
 }
 
 export function heightAt(rec: HouseRecord, x: number, z: number, feetY?: number): number {

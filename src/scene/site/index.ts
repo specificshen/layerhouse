@@ -34,6 +34,10 @@ export function buildSite(
   // ——— Pavers: driveway + entry path ———
   addBox(site, 8.6, 0.04, 7.2, 4.2, 0.02, 9.4, mats.paver, rec, { noCast: true });
   addBox(site, 4.2, 0.04, 3.4, -0.9, 0.02, 8.0, mats.paver, rec, { noCast: true });
+  addBox(site, 9.0, 0.025, 0.16, 4.2, 0.045, 13.05, mats.concrete, rec, { noCast: true });
+  addBox(site, 0.14, 0.025, 7.4, -0.05, 0.045, 9.4, mats.concrete, rec, { noCast: true });
+  addBox(site, 0.14, 0.025, 7.4, 8.55, 0.045, 9.4, mats.concrete, rec, { noCast: true });
+  addBox(site, 4.5, 0.02, 0.08, -0.9, 0.04, 6.4, mats.concrete, rec, { noCast: true });
   // ——— Pool (basin + coping) ———
   const pw = POOL.x1 - POOL.x0,
     pd = POOL.z1 - POOL.z0;
@@ -263,7 +267,7 @@ export function buildLandscape(groups: HouseGroups, mats: Materials, rec: HouseR
   const land = groups.landscape;
   // Planters
   planter(land, mats, rec, 5.9, -6.4, 0.7, 0.7);
-  planter(land, mats, rec, -3.4, 7.4, 1.1, 0.7);
+  planter(land, mats, rec, -2.4, 9.5, 0.9, 0.6);
   planter(land, mats, rec, 1.4, 7.6, 0.9, 0.6);
 
   // Trees — pines + maples, no palms
@@ -288,8 +292,8 @@ export function buildLandscape(groups: HouseGroups, mats: Materials, rec: HouseR
 
   // Shrubs
   const shrubPts: Array<[number, number, number]> = [
-    [-6.6, 7.1, 0.55],
-    [-5.2, 7.3, 0.4],
+    [-6.8, 8.6, 0.42],
+    [-5.0, 8.9, 0.36],
     [6.6, 7.0, 0.45],
     [9.4, 1.2, 0.5],
     [-8.8, -2.2, 0.55],

@@ -98,20 +98,11 @@ function addWindow(parent: THREE.Object3D, o: FenestrationOpts, mats: Materials,
     noShadow: true,
   });
   pane.name = "glass";
-  const warm = addBox(
-    g,
-    innerW - 0.02,
-    innerH - 0.02,
-    0.016,
-    0,
-    0.01,
-    -0.012,
-    mats.glassWarm,
-    rec,
-    {
-      noShadow: true,
-    },
-  );
+  pane.renderOrder = 3;
+  const warm = addBox(g, innerW - 0.04, innerH - 0.04, 0.008, 0, 0.01, 0.02, mats.glassWarm, rec, {
+    noShadow: true,
+  });
+  warm.renderOrder = 2;
   warm.name = "glassWarm";
   parent.add(g);
   return g;

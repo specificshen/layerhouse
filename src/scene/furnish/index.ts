@@ -51,15 +51,35 @@ function sofa(
   const g = new THREE.Group();
   g.position.set(x, y, z);
   g.rotation.y = rotY;
-  addBox(g, len, 0.38, 0.92, 0, 0.22, 0, mats.fabric, rec, {});
-  addBox(g, len, 0.42, 0.18, 0, 0.52, -0.36, mats.fabric, rec, {});
-  addBox(g, 0.16, 0.38, 0.88, -len / 2 + 0.1, 0.48, 0.02, mats.cushionB, rec, {});
-  addBox(g, 0.16, 0.38, 0.88, len / 2 - 0.1, 0.48, 0.02, mats.cushionB, rec, {});
-  const n = len > 2 ? 3 : 2;
-  for (let i = 0; i < n; i++) {
-    const px = -len / 2 + 0.4 + (i * (len - 0.8)) / Math.max(1, n - 1);
-    addBox(g, 0.46, 0.12, 0.42, px, 0.48, 0.08, mats.cushionC, rec, {});
+  const n = len > 2.2 ? 3 : 2;
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      addBox(
+        g,
+        0.07,
+        0.12,
+        0.07,
+        sx * (len / 2 - 0.12),
+        0.06,
+        sz * 0.32 - 0.06,
+        mats.woodDark,
+        rec,
+        {},
+      );
+    }
   }
+  addBox(g, len - 0.08, 0.08, 0.78, 0, 0.16, 0.02, mats.woodDark, rec, {});
+  const seatW = (len - 0.36) / n;
+  for (let i = 0; i < n; i++) {
+    const px = -len / 2 + 0.2 + seatW / 2 + i * seatW;
+    addBox(g, seatW - 0.04, 0.16, 0.7, px, 0.28, 0.06, mats.fabric, rec, {});
+    addBox(g, seatW - 0.1, 0.1, 0.16, px, 0.46, -0.22, mats.cushionB, rec, { noCast: true });
+  }
+  const back = addBox(g, len - 0.16, 0.46, 0.12, 0, 0.5, -0.34, mats.fabric, rec, {});
+  back.rotation.x = -0.16;
+  addBox(g, 0.14, 0.42, 0.78, -len / 2 + 0.1, 0.36, 0.02, mats.cushionB, rec, {});
+  addBox(g, 0.14, 0.42, 0.78, len / 2 - 0.1, 0.36, 0.02, mats.cushionB, rec, {});
+  addBox(g, 0.32, 0.1, 0.32, -len * 0.18, 0.4, 0.12, mats.cushionC, rec, { noCast: true });
   parent.add(g);
 }
 
@@ -149,20 +169,42 @@ function bed(
   const g = new THREE.Group();
   g.position.set(x, y, z);
   g.rotation.y = rotY;
-  addBox(g, w + 0.1, 0.28, d + 0.08, 0, 0.18, 0, mats.woodDark, rec, {});
-  addBox(g, w + 0.06, 0.72, 0.08, 0, 0.58, -d / 2, mats.woodDark, rec, {});
-  const duvet = mats.linen.clone();
-  duvet.color.setHex(king ? 0xb7c4b4 : 0xc4b0a0);
-  addBox(g, w - 0.06, 0.16, d - 0.08, 0, 0.4, 0.02, mats.linen, rec, {});
-  addBox(g, w - 0.08, 0.08, d * 0.72, 0, 0.5, 0.12, duvet, rec, {});
-  addBox(g, w * 0.55, 0.05, 0.42, 0, 0.54, d * 0.28, mats.cushionC, rec, { noCast: true });
-  const pillow = mats.linen.clone();
-  pillow.color.setHex(0xf4efe6);
-  addBox(g, 0.52, 0.14, 0.34, -w * 0.22, 0.58, -d / 2 + 0.32, pillow, rec, {});
-  addBox(g, 0.52, 0.14, 0.34, w * 0.22, 0.58, -d / 2 + 0.32, pillow, rec, {});
-  if (king) {
-    addBox(g, 0.42, 0.1, 0.28, 0, 0.64, -d / 2 + 0.46, pillow, rec, { noCast: true });
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      addBox(
+        g,
+        0.08,
+        0.16,
+        0.08,
+        sx * (w / 2 - 0.08),
+        0.08,
+        sz * (d / 2 - 0.1),
+        mats.woodDark,
+        rec,
+        {},
+      );
+    }
   }
+  addBox(g, w + 0.08, 0.1, d + 0.06, 0, 0.2, 0, mats.woodDark, rec, {});
+  addBox(g, w + 0.04, 0.62, 0.08, 0, 0.58, -d / 2 + 0.02, mats.woodDark, rec, {});
+  const pad = mats.linen.clone();
+  pad.color.setHex(0xe7d3c4);
+  pad.map = null;
+  addBox(g, w * 0.72, 0.42, 0.05, 0, 0.62, -d / 2 + 0.06, pad, rec, { noCast: true });
+  addBox(g, w - 0.08, 0.14, d - 0.12, 0, 0.32, 0.02, mats.linen, rec, {});
+  const duvet = mats.linen.clone();
+  duvet.color.setHex(king ? 0xb7c4b4 : 0xc9b09a);
+  duvet.map = null;
+  addBox(g, w - 0.12, 0.08, d * 0.62, 0, 0.44, 0.08, duvet, rec, {});
+  const fold = addBox(g, w - 0.16, 0.05, d * 0.22, 0, 0.48, d * 0.28, duvet, rec, { noCast: true });
+  fold.rotation.x = 0.18;
+  const pillow = mats.linen.clone();
+  pillow.color.setHex(0xf7f1e8);
+  pillow.map = null;
+  addBox(g, 0.48, 0.12, 0.32, -w * 0.22, 0.52, -d / 2 + 0.28, pillow, rec, {});
+  addBox(g, 0.48, 0.12, 0.32, w * 0.22, 0.52, -d / 2 + 0.28, pillow, rec, {});
+  addBox(g, 0.42, 0.08, 0.26, -w * 0.2, 0.6, -d / 2 + 0.42, pillow, rec, { noCast: true });
+  addBox(g, 0.42, 0.08, 0.26, w * 0.2, 0.6, -d / 2 + 0.42, pillow, rec, { noCast: true });
   parent.add(g);
 }
 
@@ -430,13 +472,12 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   armchair(f, mats, rec, -2.55, y0, 2.4, -Math.PI / 3);
   armchair(f, mats, rec, -6.05, y0, 2.6, Math.PI / 4);
   table(f, mats, rec, -4.3, y0, 2.15, 1.2, 0.7, 0.38, mats.woodDark);
-  tv(f, mats, rec, -4.4, y0, 5.55, Math.PI);
+  tv(f, mats, rec, -5.8, y0, 3.15, Math.PI / 2);
   lamp(f, rec, -4.3, Y_GF_CEIL - 0.02, 1.6, mats, "recessed", 0.9);
   lamp(f, rec, -5.6, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -3.0, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -6.3, y0, 4.6, mats, "floor", 0.55);
-  art(f, mats, rec, -6.95, y0 + 1.55, 1.7, Math.PI / 2, 1.15, 0.78, 0x8d9a86);
-  art(f, mats, rec, -5.4, y0 + 1.45, 0.35, 0, 0.55, 0.7, 0xc4a080);
+  art(f, mats, rec, -1.58, y0 + 1.55, 5.35, -Math.PI / 2, 0.7, 0.5, 0x8d9a86);
 
   // —— Dining / kitchen (east main) ——
   table(f, mats, rec, 4.3, y0, 3.6, 1.8, 0.9, 0.75, mats.woodMid);
@@ -479,7 +520,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   armchair(f, mats, rec, -2.3, y0, -6.5, -Math.PI / 2);
   lamp(f, rec, -4.4, 2.92, -8.0, mats, "recessed", 0.6);
   lamp(f, rec, -5.4, y0 + 0.55, -9.15, mats, "sconce", 0.3);
-  art(f, mats, rec, -4.5, y0 + 1.5, -10.25, 0, 0.9, 0.6, 0x6e7c88);
+  art(f, mats, rec, -4.2, y0 + 1.5, -5.58, Math.PI, 0.7, 0.48, 0x6e7c88);
 
   // —— Guest bath ——
   vanity(f, mats, rec, -6.4, y0, -3.6, Math.PI / 2, 1.0);
@@ -497,7 +538,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   lamp(f, rec, -2.4, Y_L2_CEIL - 0.02, 1.3, mats, "recessed", 0.8);
   lamp(f, rec, -5.5, Y_L2_CEIL - 0.02, 4.2, mats, "recessed", 0.5);
   lamp(f, rec, -3.5, y2 + 0.55, 0.2, mats, "sconce", 0.3);
-  art(f, mats, rec, -6.9, y2 + 1.55, 1.5, Math.PI / 2, 0.85, 1.05, 0xa89078);
+  art(f, mats, rec, -4.2, y2 + 1.45, 3.18, Math.PI, 0.72, 0.5, 0xa89078);
 
   // Master bath
   vanity(f, mats, rec, -6.4, y2, 4.7, Math.PI / 2, 1.3);
@@ -518,7 +559,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   armchair(f, mats, rec, 3.5, y2, 5.0, Math.PI * 0.8);
   lamp(f, rec, 5.0, Y_L2_CEIL - 0.02, 1.0, mats, "recessed", 0.7);
   lamp(f, rec, 4.8, Y_L2_CEIL - 0.02, 4.6, mats, "recessed", 0.5);
-  art(f, mats, rec, 4.6, y2 + 1.6, 5.95, Math.PI, 1.05, 0.72, 0x7f8c78);
+  art(f, mats, rec, 2.62, y2 + 1.5, 1.4, Math.PI / 2, 0.62, 0.46, 0x7f8c78);
 
   // hallway lamps
   lamp(f, rec, 1.5, Y_L2_CEIL - 0.02, -0.6, mats, "recessed", 0.5);

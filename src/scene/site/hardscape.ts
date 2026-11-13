@@ -5,9 +5,9 @@ import type { Materials } from "../materials";
 import type { HouseRecord } from "../../types";
 
 export function buildFence(parent: THREE.Object3D, mats: Materials, rec: HouseRecord) {
-  const slatH = 0.11,
-    gap = 0.028,
-    n = 7,
+  const slatH = 0.08,
+    gap = 0.07,
+    n = 5,
     h = n * (slatH + gap);
   function run(x0: number, z0: number, x1: number, z1: number) {
     const dx = x1 - x0,
@@ -31,9 +31,9 @@ export function buildFence(parent: THREE.Object3D, mats: Materials, rec: HouseRe
     addBox(parent, 0.06, 0.045, len, cx, h + 0.08, cz, mats.woodDark, rec, { rotY });
   }
   // west lot
-  run(LOT.x0 + 0.4, WATER_EDGE + 0.4, LOT.x0 + 0.4, 8.5);
-  // south-west (leave entry/drive open)
-  run(LOT.x0 + 0.4, 8.5, -3.2, 8.5);
+  run(LOT.x0 + 0.4, WATER_EDGE + 0.4, LOT.x0 + 0.4, 12.4);
+  // Street-side fence sits on the lot line so living-room glass looks onto lawn, not a wood wall.
+  run(LOT.x0 + 0.4, 12.4, -2.4, 12.4);
   // east
   run(LOT.x1 - 0.6, WATER_EDGE + 0.8, LOT.x1 - 0.6, 7.2);
   run(11.6, 7.2, LOT.x1 - 0.6, 7.2);
@@ -48,31 +48,31 @@ export function buildCarport(parent: THREE.Object3D, mats: Materials, rec: House
     [x0 + 0.25, z1 - 0.25],
     [x1 - 0.25, z1 - 0.25],
   ];
-  for (const [x, z] of posts) addCyl(parent, 0.07, y, x, y / 2, z, mats.steel);
-  addBox(
-    parent,
-    x1 - x0 + 0.3,
-    0.08,
-    z1 - z0 + 0.3,
-    (x0 + x1) / 2,
-    y,
-    (z0 + z1) / 2,
-    mats.fascia,
-    rec,
-    {},
-  );
-  addBox(
-    parent,
-    x1 - x0 + 0.3,
-    0.03,
-    z1 - z0 + 0.3,
-    (x0 + x1) / 2,
-    y - 0.06,
-    (z0 + z1) / 2,
-    mats.deck,
-    rec,
-    {},
-  );
+  for (const [x, z] of posts) {
+    addCyl(parent, 0.07, y - 0.08, x, (y - 0.08) / 2, z, mats.steel);
+    addCyl(parent, 0.11, 0.04, x, y - 0.16, z, mats.steel, { noShadow: true });
+    addCyl(parent, 0.1, 0.03, x, 0.02, z, mats.steel, { noShadow: true });
+  }
+  const roof = new THREE.Group();
+  const cx = (x0 + x1) / 2;
+  const cz = (z0 + z1) / 2;
+  roof.position.set(cx, y, cz);
+  roof.rotation.z = -0.045;
+  parent.add(roof);
+  const rw = x1 - x0 + 0.55;
+  const rd = z1 - z0 + 0.4;
+  addBox(roof, rw, 0.05, rd, 0, 0.02, 0, mats.roof, rec, {});
+  const seams = 7;
+  for (let i = 0; i <= seams; i++) {
+    const sx = -rw / 2 + (i * rw) / seams;
+    addBox(roof, 0.018, 0.028, rd + 0.04, sx, 0.055, 0, mats.roofSeam, null, {});
+  }
+  addBox(roof, rw + 0.06, 0.14, 0.06, 0, -0.02, rd / 2, mats.fascia, rec, {});
+  addBox(roof, rw + 0.06, 0.1, 0.05, 0, -0.01, -rd / 2, mats.fascia, rec, {});
+  addBox(roof, 0.05, 0.12, rd, -rw / 2, -0.01, 0, mats.fascia, rec, {});
+  addBox(roof, 0.05, 0.12, rd, rw / 2, -0.01, 0, mats.fascia, rec, {});
+  addBox(parent, rw - 0.2, 0.08, 0.1, cx, y - 0.18, z0 + 0.45, mats.steel, rec, {});
+  addBox(parent, rw - 0.2, 0.08, 0.1, cx, y - 0.18, z1 - 0.45, mats.steel, rec, {});
   rec.floors.push({ x0, x1, z0, z1, y: 0.04, level: 0 });
 }
 

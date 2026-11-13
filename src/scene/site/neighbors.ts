@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { addBox } from "../geom";
+import { addBox, addCyl } from "../geom";
 import type { Materials } from "../materials";
 import type { HouseRecord } from "../../types";
 
@@ -79,6 +79,17 @@ function neighbor(
     }
   }
   addBox(g, 0.9, 2.05, 0.06, 0, 1.15, d / 2 + 0.03, _mats.woodDark, null, {});
+  addBox(g, 1.4, 0.08, 0.7, 0, 0.06, d / 2 + 0.35, _mats.concrete, null, { noCast: true });
+  addBox(g, 2.4, 0.05, 1.15, 0, 2.42, d / 2 + 0.5, roofMat, null, {});
+  addCyl(g, 0.05, 2.4, -0.95, 1.2, d / 2 + 0.85, _mats.steel);
+  addCyl(g, 0.05, 2.4, 0.95, 1.2, d / 2 + 0.85, _mats.steel);
+  addBox(g, w + 0.08, 0.07, d + 0.08, 0, h * 0.46, 0, _mats.plinth, null, { noCast: true });
+  addBox(g, 0.46, 1.15, 0.46, w * 0.28, h + 0.55, -d * 0.12, _mats.plinth, null, {});
+  for (let i = 0; i < nw; i++) {
+    const px = -w / 2 + 1.6 + i * ((w - 3.2) / Math.max(1, nw - 1));
+    addBox(g, 0.03, 1.05, 0.02, px, 1.7, d / 2 + 0.07, frame, null, { noCast: true });
+    addBox(g, 0.78, 0.03, 0.02, px, 1.7, d / 2 + 0.07, frame, null, { noCast: true });
+  }
   g.userData.windows = wins;
   g.userData.winMat = winMat;
 

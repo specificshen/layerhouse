@@ -439,25 +439,27 @@ export function createMaterials(textures: SceneTextures): Materials {
 
   // Cheaper window pane used when we need interior glow to read clearly
   const glassSimple = phys({
-    color: 0x9aafbe,
-    roughness: 0.08,
-    metalness: 0.1,
+    color: 0xc5d5e2,
+    roughness: 0.04,
+    metalness: 0.04,
     transparent: true,
-    opacity: 0.38,
-    envMapIntensity: 1.4,
+    opacity: 0.18,
+    envMapIntensity: 1.1,
     transmission: 0,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
 
   const glassWarm = phys({
-    color: 0xffd8a0,
-    emissive: 0xffc078,
+    color: 0xffe2c2,
+    emissive: 0xffb878,
     emissiveIntensity: 0,
-    roughness: 0.12,
-    metalness: 0.05,
+    roughness: 0.2,
+    metalness: 0.02,
     transparent: true,
-    opacity: 0.42,
-    envMapIntensity: 0.8,
+    opacity: 0.1,
+    envMapIntensity: 0.4,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
 

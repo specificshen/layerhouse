@@ -33,10 +33,10 @@ const frag = /* glsl */ `
     float c1 = sin(cuv.x * 1.6 + cuv.y * 0.55);
     float c2 = sin(cuv.x * 3.2 - cuv.y * 2.3);
     float c3 = sin((cuv.x + cuv.y) * 0.8);
-    float clouds = smoothstep(0.2, 0.85, c1 * 0.5 + c2 * 0.28 + c3 * 0.22 + 0.12);
-    clouds *= smoothstep(0.02, 0.32, h);
-    vec3 cloudCol = mix(uHorizon, vec3(1.0), 0.62);
-    col = mix(col, cloudCol, clouds * uCloud * 0.5);
+    float clouds = smoothstep(0.55, 0.92, c1 * 0.55 + c2 * 0.3 + c3 * 0.2);
+    clouds *= smoothstep(0.18, 0.55, h);
+    vec3 cloudCol = mix(uHorizon, vec3(0.97, 0.98, 1.0), 0.45);
+    col = mix(col, cloudCol, clouds * uCloud * 0.85);
     vec3 sunD = normalize(uSunDir);
     float mu = max(dot(dir, sunD), 0.0);
     float disc = pow(mu, uSunSharp);
@@ -101,7 +101,7 @@ export function applySky(sky: SkyHandle, timeId: TimeId) {
   u.uGlow.value = t.glow;
   u.uSunSharp.value = timeId === "night" ? 800 : timeId === "day" ? 400 : 180;
   const cloud =
-    timeId === "day" ? 0.28 : timeId === "dawn" ? 0.32 : timeId === "dusk" ? 0.18 : 0.05;
+    timeId === "day" ? 0.55 : timeId === "dawn" ? 0.28 : timeId === "dusk" ? 0.16 : 0.04;
   u.uCloud.value = cloud;
 }
 
