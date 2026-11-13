@@ -41,6 +41,7 @@ function lamp(
   mats: Materials,
   kind: LampKind = "pendant",
   intensity = 1,
+  walk = 1,
 ) {
   switch (kind) {
     case "pendant":
@@ -78,6 +79,7 @@ function lamp(
   const light = new THREE.PointLight(0xffc888, 0, 7.5, 2);
   light.position.set(x, lightY, z);
   light.userData.base = intensity;
+  light.userData.walk = walk;
   parent.add(light);
   rec.lamps.push(light);
   return undefined;
@@ -101,7 +103,8 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   bench(f, pal, -6.84, y0, 1.25, Math.PI / 2, 1.5);
   bench(f, pal, -1.84, y0, 5.45, Math.PI / 2, 0.84);
   plant(f, pal, -2.45, y0, 4.65);
-  lamp(f, rec, -4.3, Y_GF_CEIL - 0.02, 1.6, mats, "recessed", 0.9);
+  // Northern living recessed light. Walk view puts it on the solid return; ease only there.
+  lamp(f, rec, -4.3, Y_GF_CEIL - 0.02, 1.6, mats, "recessed", 0.9, 0.38);
   lamp(f, rec, -5.6, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -3.0, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -6.3, y0, 4.6, mats, "floor", 0.55);

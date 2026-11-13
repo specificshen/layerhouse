@@ -73,14 +73,27 @@ export function syncOpenRoofLighting(s: Session) {
     fl.color.setHex(glow > 0.5 ? 0x2a6e68 : 0x4a948c);
     fl.emissive.setHex(0x146860);
     fl.emissiveIntensity = 0.08 + glow * 0.42;
+    const lit = glow > 0.5;
+    const mid = s.rec.water.poolMid.material;
+    mid.toneMapped = true;
+    mid.color.setHex(lit ? 0x245e58 : 0x387870);
+    mid.emissive.setHex(0x146458);
+    mid.emissiveIntensity = lit ? 0.4 : 0.06;
     const deep = s.rec.water.poolDeep.material;
     deep.toneMapped = true;
-    deep.color.setHex(glow > 0.5 ? 0x0c2428 : 0x163430);
-    deep.emissive.setHex(0x041c1c);
-    deep.emissiveIntensity = 0.015 + glow * 0.05;
+    deep.color.setHex(lit ? 0x2a7068 : 0x3a8478);
+    deep.emissive.setHex(0x1c8878);
+    deep.emissiveIntensity = lit ? 0.48 : 0.07;
     const cau = s.rec.water.caustic.material;
     cau.opacity = 0.1 + glow * 0.08;
     cau.emissiveIntensity = 0.04 + glow * 0.14;
+    const sheen = s.rec.water.poolSheen.material;
+    // Open-roof exposure crushes a tone-mapped film back to black.
+    sheen.toneMapped = false;
+    sheen.opacity = lit ? 0.36 : 0.16;
+    sheen.color.setHex(0xd5ebe3);
+    sheen.emissive.setHex(0x9ecfc2);
+    sheen.emissiveIntensity = lit ? 0.22 : 0.05;
   }
   if (s.mode === "walk") {
     s.renderer.toneMappingExposure *= 0.72;
@@ -88,7 +101,10 @@ export function syncOpenRoofLighting(s: Session) {
     s.bloom.threshold = Math.max(s.bloom.threshold, 0.98);
     s.mats.lampBulb.emissiveIntensity *= 0.22;
     s.mats.lampShade.emissiveIntensity *= 0.4;
-    for (const l of s.rec.lamps) l.intensity *= 0.34;
+    for (const l of s.rec.lamps) {
+      const walkScale = Number(l.userData.walk);
+      l.intensity *= 0.34 * (Number.isFinite(walkScale) ? walkScale : 1);
+    }
   }
 }
 

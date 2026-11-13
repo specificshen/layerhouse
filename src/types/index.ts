@@ -174,8 +174,10 @@ export interface WaterRecord {
   pool: THREE.Object3D;
   poolTint: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
   poolFloor: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+  poolMid: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
   poolDeep: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
   caustic: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
+  poolSheen: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
   group: THREE.Group;
 }
 

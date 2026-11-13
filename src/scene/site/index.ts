@@ -218,8 +218,10 @@ export function buildWater(_scene: THREE.Scene, rec: HouseRecord): THREE.Group {
     pool: basin.pool,
     poolTint: basin.poolTint,
     poolFloor: basin.poolFloor,
+    poolMid: basin.poolMid,
     poolDeep: basin.poolDeep,
     caustic: basin.caustic,
+    poolSheen: basin.poolSheen,
     group: waterGrp,
   };
   return waterGrp;
@@ -310,6 +312,37 @@ function causticMap(): THREE.CanvasTexture {
       ctx.ellipse(x, y, rx, ry, i * 0.6, 0, Math.PI * 2);
       ctx.fill();
     }
+    // Canvas top is north (deep). Keep the pattern on the shallow south end.
+    ctx.globalCompositeOperation = "destination-in";
+    const fade = ctx.createLinearGradient(0, h, 0, 0);
+    fade.addColorStop(0, "rgba(0,0,0,1)");
+    fade.addColorStop(0.46, "rgba(0,0,0,0.9)");
+    fade.addColorStop(0.68, "rgba(0,0,0,0.12)");
+    fade.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, 0, w, h);
+  });
+}
+
+function sheenMap(): THREE.CanvasTexture {
+  return canvasTexture(512, 256, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h);
+    const film = ctx.createLinearGradient(0, h, 0, 0);
+    film.addColorStop(0, "rgba(186,224,214,0.05)");
+    film.addColorStop(0.22, "rgba(214,238,230,0.34)");
+    film.addColorStop(0.55, "rgba(232,246,240,0.48)");
+    film.addColorStop(0.84, "rgba(200,228,220,0.22)");
+    film.addColorStop(1, "rgba(180,214,206,0.04)");
+    ctx.fillStyle = film;
+    ctx.fillRect(0, 0, w, h);
+    const streak = ctx.createRadialGradient(w * 0.4, h * 0.46, 6, w * 0.46, h * 0.5, w * 0.42);
+    streak.addColorStop(0, "rgba(255,255,255,0.8)");
+    streak.addColorStop(0.4, "rgba(236,248,244,0.35)");
+    streak.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = streak;
+    ctx.beginPath();
+    ctx.ellipse(w * 0.42, h * 0.48, w * 0.36, h * 0.18, -0.42, 0, Math.PI * 2);
+    ctx.fill();
   });
 }
 
@@ -381,13 +414,21 @@ function buildPoolBasin(
     emissive: 0x08302e,
     emissiveIntensity: 0.04,
   });
-  const deepMat = new THREE.MeshStandardMaterial({
-    color: 0x10282c,
+  const midMat = new THREE.MeshStandardMaterial({
+    color: 0x2a625c,
     map,
-    roughness: 0.74,
-    metalness: 0.04,
-    emissive: 0x041616,
-    emissiveIntensity: 0.02,
+    roughness: 0.64,
+    metalness: 0.05,
+    emissive: 0x0c3834,
+    emissiveIntensity: 0.05,
+  });
+  const deepMat = new THREE.MeshStandardMaterial({
+    color: 0x1c4644,
+    map,
+    roughness: 0.7,
+    metalness: 0.06,
+    emissive: 0x0c3030,
+    emissiveIntensity: 0.06,
   });
   const shell = new THREE.Mesh(
     new THREE.BoxGeometry(pw - 0.02, 0.16, pd - 0.02),
@@ -401,7 +442,9 @@ function buildPoolBasin(
   const floorBottom = -0.86;
   const bands = tops.length;
   let poolFloor: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial> | null = null;
+  let poolMid: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial> | null = null;
   let poolDeep: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial> | null = null;
+  const bandMat = (i: number) => (i < 2 ? shallowMat : i === 2 ? midMat : deepMat);
   for (let i = 0; i < bands; i++) {
     const zSouth = south - (innerD * i) / bands;
     const zNorth = south - (innerD * (i + 1)) / bands;
@@ -409,15 +452,16 @@ function buildPoolBasin(
     const top = tops[i]!;
     const base = tops[i + 1] ?? floorBottom;
     const thick = top - base;
-    const mat = i < 2 ? shallowMat : deepMat;
+    const mat = bandMat(i);
     const mesh = tileBox(innerW - 0.08, thick, len, mat);
     mesh.position.set(px, base + thick / 2, (zSouth + zNorth) / 2);
-    mesh.name = i < 2 ? "poolFloor" : "poolDeep";
+    mesh.name = i < 2 ? "poolFloor" : i === 2 ? "poolMid" : "poolDeep";
     parent.add(mesh);
     if (i === 0) poolFloor = mesh;
+    if (i === 2) poolMid = mesh;
     if (i === bands - 1) poolDeep = mesh;
   }
-  if (!poolFloor || !poolDeep) throw new Error("pool basin failed to build");
+  if (!poolFloor || !poolMid || !poolDeep) throw new Error("pool basin failed to build");
 
   const wallTop = 0.045;
   const wallT = 0.055;
@@ -440,7 +484,7 @@ function buildPoolBasin(
   for (let i = 0; i < bands; i++) {
     const zSouth = south - (innerD * i) / bands;
     const zNorth = south - (innerD * (i + 1)) / bands;
-    const mat = i < 2 ? shallowMat : deepMat;
+    const mat = bandMat(i);
     for (const side of [-1, 1]) {
       placeWall(
         wallT,
@@ -493,8 +537,30 @@ function buildPoolBasin(
   poolTint.name = "poolTint";
   poolTint.renderOrder = 4;
 
-  parent.add(caustic, poolTint);
-  return { pool: poolTint, poolTint, poolFloor, poolDeep, caustic };
+  // North half only. A soft film so the deep end reads as water, not an empty floor.
+  const sheenD = innerD * 0.5;
+  const poolSheen = new THREE.Mesh(
+    new THREE.PlaneGeometry(innerW - 0.18, sheenD),
+    new THREE.MeshStandardMaterial({
+      color: 0xc9e0d8,
+      map: sheenMap(),
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false,
+      roughness: 0.24,
+      metalness: 0.28,
+      emissive: 0x7eaea4,
+      emissiveIntensity: 0.08,
+      envMapIntensity: 0.85,
+    }),
+  );
+  poolSheen.rotation.x = -Math.PI / 2;
+  poolSheen.position.set(px, waterY + 0.02, south - innerD + sheenD / 2);
+  poolSheen.name = "poolSheen";
+  poolSheen.renderOrder = 5;
+
+  parent.add(caustic, poolTint, poolSheen);
+  return { pool: poolTint, poolTint, poolFloor, poolMid, poolDeep, caustic, poolSheen };
 }
 
 export function buildLandscape(groups: HouseGroups, mats: Materials, rec: HouseRecord) {
@@ -505,8 +571,11 @@ export function buildLandscape(groups: HouseGroups, mats: Materials, rec: HouseR
   planter(land, mats, rec, 1.4, 7.6, 0.9, 0.6);
 
   // Trees — pines + maples, no palms
-  // Shifted off the carport so the trunk is not in front of the roof.
+  // Same crown as the old driveway pine; the trunk moves onto the lawn east of the curb.
   pine(land, mats, 7.8, 8.6, 1.15, 5.4);
+  const frontPine = land.children.at(-1);
+  // East of the drive curb and south of the carport, so the trunk sits on the lawn.
+  if (frontPine) frontPine.position.set(10.9, 0, 9.5);
   // East of the roof. 11.2 sat under it and the trunk grew through the slab.
   pine(land, mats, 12.6, 4.2, 0.95, 4.6);
   pine(land, mats, -10.6, 2.2, 1.2, 5.8);
