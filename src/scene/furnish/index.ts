@@ -106,6 +106,9 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   lamp(f, rec, -3.0, Y_GF_CEIL - 0.02, 3.4, mats, "recessed", 0.7);
   lamp(f, rec, -6.3, y0, 4.6, mats, "floor", 0.55);
   art(f, pal, rec, -1.66, y0 + 1.5, 5.4, -Math.PI / 2, 0.62, 0.42, 0x8d9a86);
+  // North of the west window. The glazing runs z 0.15–5.7; these stay on the solid return.
+  art(f, pal, rec, -7.04, y0 + 1.58, -1.12, Math.PI / 2, 0.56, 0.38, 0x8a6e58);
+  art(f, pal, rec, -7.04, y0 + 1.5, -1.82, Math.PI / 2, 0.32, 0.44, 0xc2b29a);
 
   // —— Dining ——
   table(f, pal, 4.3, y0, 3.6, 1.8, 0.9, 0.75, pal.oak, "dining");

@@ -173,7 +173,9 @@ export interface WaterRecord {
   overlay: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhysicalMaterial>;
   pool: THREE.Object3D;
   poolTint: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
-  poolFloor: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
+  poolFloor: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+  poolDeep: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+  caustic: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
   group: THREE.Group;
 }
 
@@ -255,7 +257,7 @@ export interface DemoApi {
   setLayer: (id: LayerId) => void;
   setCut: (dir: CutDir, value: number) => void;
   snapCam: (pos: Vec3 | number[], target: Vec3 | number[]) => void;
-  walkTo: (x: number, z: number, yaw: number) => void;
+  walkTo: (x: number, z: number, yaw: number, pitch?: number) => void;
   openDoor: () => void;
   setRoof: (y: number) => void;
   readonly state: DemoState;

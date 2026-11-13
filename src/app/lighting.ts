@@ -60,18 +60,35 @@ export function syncOpenRoofLighting(s: Session) {
   s.bloom.strength = baseBloom * (1 - open * 0.45);
   s.bloom.threshold = s.timeId === "night" ? 0.72 : 0.88;
   if (s.rec.water) {
-    const nightish = s.timeId !== "day";
-    s.rec.water.pool.visible = !nightish;
+    const glow = t.poolGlow;
     const tint = s.rec.water.poolTint.material;
-    tint.toneMapped = !nightish;
-    tint.opacity = nightish ? 0.72 : 0.32;
-    tint.emissive.setHex(nightish ? 0x1ec4ba : 0x0a3a38);
-    tint.emissiveIntensity = nightish ? 0.85 : 0.06;
-    tint.roughness = nightish ? 0.22 : 0.18;
+    tint.toneMapped = true;
+    tint.opacity = 0.16 + glow * 0.05;
+    tint.color.setHex(glow > 0.5 ? 0x16383e : 0x2a5c5e);
+    tint.emissive.setHex(0x08302e);
+    tint.emissiveIntensity = 0.02 + glow * 0.05;
+    tint.roughness = 0.2;
     const fl = s.rec.water.poolFloor.material;
-    fl.toneMapped = !nightish;
-    fl.emissive.setHex(nightish ? 0x128f88 : 0x0a3030);
-    fl.emissiveIntensity = nightish ? 0.7 : 0.04;
+    fl.toneMapped = true;
+    fl.color.setHex(glow > 0.5 ? 0x2a6e68 : 0x4a948c);
+    fl.emissive.setHex(0x146860);
+    fl.emissiveIntensity = 0.08 + glow * 0.42;
+    const deep = s.rec.water.poolDeep.material;
+    deep.toneMapped = true;
+    deep.color.setHex(glow > 0.5 ? 0x0c2428 : 0x163430);
+    deep.emissive.setHex(0x041c1c);
+    deep.emissiveIntensity = 0.015 + glow * 0.05;
+    const cau = s.rec.water.caustic.material;
+    cau.opacity = 0.1 + glow * 0.08;
+    cau.emissiveIntensity = 0.04 + glow * 0.14;
+  }
+  if (s.mode === "walk") {
+    s.renderer.toneMappingExposure *= 0.72;
+    s.bloom.strength *= 0.3;
+    s.bloom.threshold = Math.max(s.bloom.threshold, 0.98);
+    s.mats.lampBulb.emissiveIntensity *= 0.22;
+    s.mats.lampShade.emissiveIntensity *= 0.4;
+    for (const l of s.rec.lamps) l.intensity *= 0.34;
   }
 }
 
@@ -91,10 +108,10 @@ function namedLights(s: Session, id: TimeId) {
   s.scene.traverse((o) => {
     if (!(o instanceof THREE.PointLight)) return;
     if (o.name === "pathLight") o.intensity = t.lamps * 1.7;
-    if (o.name === "poolLight") o.intensity = t.poolGlow * (id === "day" ? 0.12 : 2.6);
+    if (o.name === "poolLight") o.intensity = t.poolGlow * (id === "day" ? 0.08 : 0.85);
   });
   s.mats.pathLight.emissiveIntensity = t.lamps * 1.8;
-  s.mats.poolTile.emissiveIntensity = t.poolGlow * (id === "day" ? 0.05 : 0.9);
+  s.mats.poolTile.emissiveIntensity = t.poolGlow * (id === "day" ? 0.03 : 0.26);
 }
 
 export function applyTime(s: Session, id: TimeId) {
@@ -123,13 +140,7 @@ export function applyTime(s: Session, id: TimeId) {
   setGrassColor(s.mats, t.grass);
   syncLawnBands(s);
   namedLights(s, id);
-  if (s.rec.water) {
-    s.rec.water.overlay.material.color.setHex(t.waterTint);
-    s.rec.water.poolTint.material.color.setHex(id === "day" ? 0x3a6a68 : 0x148a86);
-    s.rec.water.poolTint.material.emissive.setHex(id === "day" ? 0x0a3a38 : 0x2ee0d4);
-    s.rec.water.poolFloor.material.color.setHex(id === "day" ? 0x1a4a48 : 0x146e6c);
-    s.rec.water.poolFloor.material.emissive.setHex(id === "day" ? 0x0a3030 : 0x1ad8cc);
-  }
+  if (s.rec.water) s.rec.water.overlay.material.color.setHex(t.waterTint);
   syncOpenRoofLighting(s);
   requestAnimationFrame(() => {
     try {

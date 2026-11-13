@@ -70,9 +70,20 @@ export function addCloseTrim(parent: THREE.Object3D, pal: FurnishPalette, rec: H
 
   for (const run of runs) layCrown(parent, pal, rec, run);
 
+  const plaster = pal.trim.clone();
+  plaster.color.setHex(0xd2c0aa);
+  plaster.roughness = 0.94;
+  // Living soffit, just under the shell and clear of the glazing.
+  addBox(parent, 5.15, 0.016, 7.5, -4.42, 3.044, 2.0, plaster, rec, {
+    noCast: true,
+    noShadow: true,
+  });
   addBox(parent, 0.08, 0.06, 4.4, -6.05, y - 0.045, 2.35, pal.oakDark, rec, { noCast: true });
   addBox(parent, 0.08, 0.06, 4.4, -2.6, y - 0.045, 2.35, pal.oakDark, rec, { noCast: true });
+  addBox(parent, 0.045, 0.04, 4.2, -4.35, y - 0.03, 2.35, pal.oakDark, rec, { noCast: true });
   addBox(parent, 2.8, 0.06, 0.08, 4.7, y - 0.045, 2.2, pal.oakDark, rec, { noCast: true });
+  // Solid west return, north of the living glazing (the window starts at z = 0.15).
+  addBox(parent, 0.016, 0.02, 1.85, -7.09, 1.18, -1.02, pal.oakDark, rec, { noCast: true });
 
   // Picture rail on the solid entry pier, above the framed print and clear of glazing.
   addBox(parent, 0.02, 0.018, 1.05, -1.66, 2.18, 5.4, pal.oakDark, rec, { noCast: true });

@@ -328,12 +328,12 @@ const demo: DemoApi = {
     orbit.update();
     session.cam.active = false;
   },
-  walkTo(x: number, z: number, yaw: number) {
+  walkTo(x: number, z: number, yaw: number, pitch = 0.02) {
     if (session.mode !== "walk") setMode("walk");
     session.cam.active = false;
     camera.position.set(x, heightAt(rec, x, z, 0.25) + EYE, z);
     session.walk.yaw = yaw;
-    session.walk.pitch = 0.02;
+    session.walk.pitch = pitch;
     applyWalkLook(session);
   },
   openDoor() {

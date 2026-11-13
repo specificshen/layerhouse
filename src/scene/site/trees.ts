@@ -474,11 +474,11 @@ function addLeafCluster(
   rnd: () => number,
 ) {
   const { right, up } = orthoFrame(dir, UP);
-  const n = 11 + Math.floor(rnd() * 3);
+  const n = 18 + Math.floor(rnd() * 4);
   for (let i = 0; i < n; i++) {
-    const along = (rnd() - 0.35) * scale * 0.4;
-    const side = (rnd() - 0.5) * scale * 0.32;
-    const lift = (rnd() - 0.2) * scale * 0.2;
+    const along = (rnd() - 0.35) * scale * 0.34;
+    const side = (rnd() - 0.5) * scale * 0.26;
+    const lift = (rnd() - 0.2) * scale * 0.16;
     const center = origin
       .clone()
       .addScaledVector(dir, along)
@@ -493,7 +493,7 @@ function addLeafCluster(
       .normalize();
     const color =
       nrm.y > 0.7 ? MAPLE_WARM : nrm.y > 0.22 ? MAPLE_LIT : lift < 0 ? MAPLE_DEEP : MAPLE_MID;
-    addMapleLeaf(acc, center, nrm, scale * (0.24 + rnd() * 0.12), rnd() * Math.PI * 2, color);
+    addMapleLeaf(acc, center, nrm, scale * (0.3 + rnd() * 0.12), rnd() * Math.PI * 2, color);
   }
 }
 
@@ -506,14 +506,20 @@ function addMapleCrown(
   rnd: () => number,
 ) {
   const reach = scale * 0.9;
-  const stations = [0.0, 0.32, 0.62, 0.92];
+  const stations = [0.0, 0.24, 0.48, 0.72, 0.94];
   for (let i = 0; i < stations.length; i++) {
-    if (i === 0 && rnd() > 0.7) continue;
-    const along = (stations[i]! - 0.2) * reach;
+    if (i === 0 && rnd() > 0.88) continue;
+    const along = (stations[i]! - 0.18) * reach;
     const p = end.clone().addScaledVector(dir, along);
-    const cluster = scale * (0.48 + stations[i]! * 0.22) * (0.88 + rnd() * 0.18);
+    const cluster = scale * (0.66 + stations[i]! * 0.2) * (0.94 + rnd() * 0.1);
     addLeafCluster(acc, p, dir, cluster, rnd);
+    if (i % 2 === 0) {
+      const { right } = orthoFrame(dir, UP);
+      const side = p.clone().addScaledVector(right, scale * 0.16 * (i === 0 ? 1 : -1));
+      addLeafCluster(acc, side, dir, cluster * 0.82, rnd);
+    }
   }
+  addLeafCluster(acc, end, dir, scale * 0.7, rnd);
 }
 
 function growLeader(
