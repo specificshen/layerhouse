@@ -55,6 +55,10 @@ export interface Opening {
   y1: number;
   type: OpeningType;
   style: OpeningStyle;
+  /** Hinge at the lesser (a0) or greater (a1) end of the opening. Sliders omit this. */
+  hinge?: "a0" | "a1";
+  /** Sign of `leaf.rotation.y` when the leaf is open. From sheets A-02 / A-03. */
+  openSign?: 1 | -1;
 }
 
 export interface Wall {
@@ -117,7 +121,9 @@ export interface DoorRecord {
   leaf: THREE.Group;
   open: number;
   target: number;
-  hingeSign: number;
+  /** Sign of `leaf.rotation.y` at full swing. Sliders ignore this and translate. */
+  openSign: number;
+  closedX: number;
   x: number;
   z: number;
   w: number;
@@ -262,6 +268,11 @@ export interface DemoApi {
   walkTo: (x: number, z: number, yaw: number, pitch?: number) => void;
   openDoor: () => void;
   setRoof: (y: number) => void;
+  /** Proof hook. Normal modes keep masonry hidden; a section shot can turn it on. */
+  showLayer: (id: LayerId, visible: boolean) => void;
+  showNeighbors: (visible: boolean) => void;
+  /** World Y extents of meshes whose names start with `prefix`. */
+  measure: (prefix: string) => Record<string, { y0: number; y1: number }>;
   readonly state: DemoState;
 }
 

@@ -346,6 +346,32 @@ const demo: DemoApi = {
     rec.roofGroup.position.y = y;
     syncOpenRoofLighting(session);
   },
+  showLayer(id, visible) {
+    rec.groups[id].visible = visible;
+  },
+  showNeighbors(visible: boolean) {
+    neighbors.visible = visible;
+  },
+  measure(prefix: string) {
+    const out: Record<string, { y0: number; y1: number }> = {};
+    houseRoot.updateWorldMatrix(true, true);
+    waterGrp.updateWorldMatrix(true, true);
+    const box = new THREE.Box3();
+    const visit = (obj: THREE.Object3D) => {
+      if (obj instanceof THREE.Mesh && obj.name.startsWith(prefix)) {
+        box.setFromObject(obj);
+        const cur = out[obj.name];
+        if (!cur) out[obj.name] = { y0: box.min.y, y1: box.max.y };
+        else {
+          cur.y0 = Math.min(cur.y0, box.min.y);
+          cur.y1 = Math.max(cur.y1, box.max.y);
+        }
+      }
+    };
+    houseRoot.traverse(visit);
+    waterGrp.traverse(visit);
+    return out;
+  },
   get state() {
     return {
       mode: session.mode,

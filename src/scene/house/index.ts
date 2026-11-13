@@ -1,5 +1,15 @@
 import * as THREE from "three";
-import { MAIN, SLAB, WALL_T, WING, Y_GF_CEIL, Y_GF_TOP, Y_L2_CEIL, Y_L2_TOP } from "../../config";
+import {
+  FINISH_T,
+  MAIN,
+  STRUCT_T,
+  WALL_T,
+  WING,
+  Y_GF_CEIL,
+  Y_GF_TOP,
+  Y_L2_CEIL,
+  Y_L2_TOP,
+} from "../../config";
 import { addBox, buildWall, solidRects } from "../geom";
 import type { Wall } from "../../types";
 import type { Materials } from "../materials";
@@ -48,68 +58,66 @@ export function buildHouse(mats: Materials): HouseRecord {
   const wallsData = defineWalls();
   const roofGroup = groups.roof;
 
-  // ——— Plinth ———
-  const plinthH = 0.16;
-  // Main plinth
-  addBox(
-    groups.walls,
-    MAIN.x1 - MAIN.x0 + 0.16,
-    plinthH,
-    MAIN.z1 - MAIN.z0 + 0.16,
-    (MAIN.x0 + MAIN.x1) / 2,
-    plinthH / 2,
-    (MAIN.z0 + MAIN.z1) / 2,
-    mats.plinth,
-    rec,
-    { clip: true },
+  // Perimeter skirt only. A full-footprint plinth sat 20 mm above FFL and hid the oak finish.
+  // Outer face matches the old skirt (80 mm outside the wall center). Top meets the wall at FFL.
+  const plinthH = Y_GF_TOP;
+  const skirt = 0.08;
+  const plinthY = plinthH / 2;
+  const plinthStrip = (w: number, d: number, x: number, z: number) => {
+    if (w < 0.02 || d < 0.02) return;
+    addBox(groups.walls, w, plinthH, d, x, plinthY, z, mats.plinth, rec, { clip: true });
+  };
+  plinthStrip(MAIN.x1 - MAIN.x0 + skirt * 2, skirt, (MAIN.x0 + MAIN.x1) / 2, MAIN.z1 + skirt / 2);
+  plinthStrip(
+    MAIN.x1 - WING.x1 + skirt,
+    skirt,
+    (WING.x1 + MAIN.x1 + skirt) / 2,
+    MAIN.z0 - skirt / 2,
   );
-  addBox(
-    groups.walls,
-    WING.x1 - WING.x0 + 0.16,
-    plinthH,
-    WING.z1 - WING.z0 + 0.16,
-    (WING.x0 + WING.x1) / 2,
-    plinthH / 2,
-    (WING.z0 + WING.z1) / 2,
-    mats.plinth,
-    rec,
-    { clip: true },
-  );
+  plinthStrip(skirt, MAIN.z1 - MAIN.z0, MAIN.x1 + skirt / 2, (MAIN.z0 + MAIN.z1) / 2);
+  plinthStrip(skirt, MAIN.z1 - MAIN.z0, MAIN.x0 - skirt / 2, (MAIN.z0 + MAIN.z1) / 2);
+  plinthStrip(WING.x1 - WING.x0 + skirt * 2, skirt, (WING.x0 + WING.x1) / 2, WING.z0 - skirt / 2);
+  plinthStrip(skirt, WING.z1 - WING.z0, WING.x0 - skirt / 2, (WING.z0 + WING.z1) / 2);
+  plinthStrip(skirt, WING.z1 - WING.z0, WING.x1 + skirt / 2, (WING.z0 + WING.z1) / 2);
 
   // ——— Floor slabs (masonry + finish floor) ———
+  // FFL stays +0.140 / +3.340. Structure is STRUCT_T, finish is FINISH_T on top.
+  // L1 structure −0.120–+0.110. L2 structure +3.080–+3.310. Sheet A-06 / NOTES.
   const mainW = MAIN.x1 - MAIN.x0;
   const mainD = MAIN.z1 - MAIN.z0;
   const wingW = WING.x1 - WING.x0;
   const wingD = WING.z1 - WING.z0;
+  const fl = FINISH_T;
+  const gfStructTop = Y_GF_TOP - fl;
+  const gfStructY = gfStructTop - STRUCT_T / 2;
+  const l2StructTop = Y_L2_TOP - fl;
+  const l2y = l2StructTop - STRUCT_T / 2;
 
-  // GF concrete slab
   addBox(
     groups.masonry,
     mainW,
-    SLAB,
+    STRUCT_T,
     mainD,
     (MAIN.x0 + MAIN.x1) / 2,
-    SLAB / 2,
+    gfStructY,
     (MAIN.z0 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true },
+    { clip: true, name: "asm-gf-struct" },
   );
   addBox(
     groups.masonry,
     wingW,
-    SLAB,
+    STRUCT_T,
     wingD,
     (WING.x0 + WING.x1) / 2,
-    SLAB / 2,
+    gfStructY,
     (WING.z0 + WING.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true },
+    { clip: true, name: "asm-gf-struct" },
   );
 
-  // GF oak floor (thin finish)
-  const fl = 0.03;
   addBox(
     groups.walls,
     mainW - 0.04,
@@ -120,7 +128,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-gf-finish" },
   );
   addBox(
     groups.walls,
@@ -132,67 +140,62 @@ export function buildHouse(mats: Materials): HouseRecord {
     (WING.z0 + WING.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-gf-finish" },
   );
 
   // L2 slab with stair opening (compose around the well)
   // Stair well: x 0.52–2.52, z -1.7–2.7
   const well = { x0: 0.5, x1: 2.54, z0: -1.72, z1: 2.72 };
-  const l2y = Y_L2_TOP - SLAB / 2;
   // west of well
   addBox(
     groups.masonry,
     well.x0 - MAIN.x0,
-    SLAB,
+    STRUCT_T,
     mainD,
     (MAIN.x0 + well.x0) / 2,
     l2y,
     (MAIN.z0 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true },
+    { clip: true, name: "asm-l2-struct" },
   );
   // east of well
   addBox(
     groups.masonry,
     MAIN.x1 - well.x1,
-    SLAB,
+    STRUCT_T,
     mainD,
     (well.x1 + MAIN.x1) / 2,
     l2y,
     (MAIN.z0 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true },
+    { clip: true, name: "asm-l2-struct" },
   );
-  // north of well (between west/east already? wait west/east cover full depth — that's wrong)
-  // Redo L2 slab as 4 pieces: west strip, east strip, north mid, south mid.
-
-  // I already added west and east as full depth — that's correct (they don't include the well).
-  // Mid north: x well, z from MAIN.z0 to well.z0
+  // West and east strips run the full depth and stop at the well. Close the north and south.
   addBox(
     groups.masonry,
     well.x1 - well.x0,
-    SLAB,
+    STRUCT_T,
     well.z0 - MAIN.z0,
     (well.x0 + well.x1) / 2,
     l2y,
     (MAIN.z0 + well.z0) / 2,
     mats.cmu,
     rec,
-    { clip: true },
+    { clip: true, name: "asm-l2-struct" },
   );
   addBox(
     groups.masonry,
     well.x1 - well.x0,
-    SLAB,
+    STRUCT_T,
     MAIN.z1 - well.z1,
     (well.x0 + well.x1) / 2,
     l2y,
     (well.z1 + MAIN.z1) / 2,
     mats.cmu,
     rec,
-    { clip: true },
+    { clip: true, name: "asm-l2-struct" },
   );
 
   // L2 oak
@@ -207,7 +210,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-l2-finish" },
   );
   addBox(
     groups.walls,
@@ -219,7 +222,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-l2-finish" },
   );
   addBox(
     groups.walls,
@@ -231,7 +234,7 @@ export function buildHouse(mats: Materials): HouseRecord {
     (MAIN.z0 + well.z0) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-l2-finish" },
   );
   addBox(
     groups.walls,
@@ -243,63 +246,66 @@ export function buildHouse(mats: Materials): HouseRecord {
     (well.z1 + MAIN.z1) / 2,
     mats.floor,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-l2-finish" },
   );
 
-  // Ceilings (GF underside of L2 slab / wing roof later)
-  const ceilT = 0.04;
+  // GF soffit stays at +3.050. Keep it under the L2 soffit (+3.080) so the plaster
+  // does not intersect the slab.
+  const l2Soffit = l2StructTop - STRUCT_T;
+  const gfCeilT = Math.min(0.024, l2Soffit - Y_GF_CEIL - 0.004);
+  const upperCeilT = 0.04;
   addBox(
     groups.walls,
     well.x0 - MAIN.x0 - 0.02,
-    ceilT,
+    gfCeilT,
     mainD - 0.04,
     (MAIN.x0 + well.x0) / 2,
-    Y_GF_CEIL + ceilT / 2,
+    Y_GF_CEIL + gfCeilT / 2,
     (MAIN.z0 + MAIN.z1) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-gf-ceil" },
   );
   addBox(
     groups.walls,
     MAIN.x1 - well.x1 - 0.02,
-    ceilT,
+    gfCeilT,
     mainD - 0.04,
     (well.x1 + MAIN.x1) / 2,
-    Y_GF_CEIL + ceilT / 2,
+    Y_GF_CEIL + gfCeilT / 2,
     (MAIN.z0 + MAIN.z1) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-gf-ceil" },
   );
   addBox(
     groups.walls,
     well.x1 - well.x0,
-    ceilT,
+    gfCeilT,
     well.z0 - MAIN.z0,
     (well.x0 + well.x1) / 2,
-    Y_GF_CEIL + ceilT / 2,
+    Y_GF_CEIL + gfCeilT / 2,
     (MAIN.z0 + well.z0) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-gf-ceil" },
   );
   addBox(
     groups.walls,
     well.x1 - well.x0,
-    ceilT,
+    gfCeilT,
     MAIN.z1 - well.z1,
     (well.x0 + well.x1) / 2,
-    Y_GF_CEIL + ceilT / 2,
+    Y_GF_CEIL + gfCeilT / 2,
     (well.z1 + MAIN.z1) / 2,
     mats.interior,
     rec,
-    { clip: true, noCast: true },
+    { clip: true, noCast: true, name: "asm-gf-ceil" },
   );
   addBox(
     groups.walls,
     wingW - 0.04,
-    ceilT,
+    upperCeilT,
     wingD - 0.04,
     (WING.x0 + WING.x1) / 2,
     2.98,
@@ -312,10 +318,10 @@ export function buildHouse(mats: Materials): HouseRecord {
   addBox(
     roofGroup,
     mainW - 0.04,
-    ceilT,
+    upperCeilT,
     mainD - 0.04,
     (MAIN.x0 + MAIN.x1) / 2,
-    Y_L2_CEIL + ceilT / 2,
+    Y_L2_CEIL + upperCeilT / 2,
     (MAIN.z0 + MAIN.z1) / 2,
     mats.interior,
     rec,
@@ -331,13 +337,15 @@ export function buildHouse(mats: Materials): HouseRecord {
 
   // Interior lintel / returns at living→wing opening (z = MAIN.z0, x = WING range)
   // Low wall stubs not needed; add a header beam in walls for the 5.6m opening
+  const lintelH = 0.25;
+  const lintelTop = Y_GF_CEIL - 0.004;
   addBox(
     groups.walls,
     WING.x1 - WING.x0,
-    0.25,
+    lintelH,
     WALL_T,
     (WING.x0 + WING.x1) / 2,
-    Y_GF_CEIL - 0.12,
+    lintelTop - lintelH / 2,
     MAIN.z0,
     mats.stucco,
     rec,

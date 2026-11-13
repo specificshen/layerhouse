@@ -3,6 +3,12 @@ import { addBox, addCyl } from "../geom";
 import type { Materials } from "../materials";
 import type { DoorStyle, HouseRecord, Wall, WallAxis } from "../../types";
 
+/** Local X of the hinge. −1 is the −X side of the door group. */
+export function leafHingeAt(axis: WallAxis, hinge: "a0" | "a1"): -1 | 1 {
+  if (axis === "z") return hinge === "a0" ? -1 : 1;
+  return hinge === "a0" ? 1 : -1;
+}
+
 export function buildFenestration(
   parent: THREE.Object3D,
   walls: Wall[],
@@ -36,6 +42,8 @@ export function buildFenestration(
             a1: o.a1,
             y0: o.y0,
             y1: o.y1,
+            hinge: o.hinge,
+            openSign: o.openSign,
           },
           mats,
           rec,
@@ -70,6 +78,8 @@ interface DoorOpts extends FenestrationOpts {
   a1: number;
   y0: number;
   y1: number;
+  hinge?: "a0" | "a1";
+  openSign?: 1 | -1;
 }
 
 function addWindow(parent: THREE.Object3D, o: FenestrationOpts, mats: Materials, rec: HouseRecord) {
@@ -121,24 +131,37 @@ function addDoor(parent: THREE.Object3D, o: DoorOpts, mats: Materials, rec: Hous
   const slabH = o.h - fw - 0.01;
   const leaf = new THREE.Group();
   leaf.name = "leaf";
-  // pivot at left
-  leaf.position.set(-o.w / 2 + fw, 0, 0);
   const style = o.style;
+  const sliding = style === "slider";
+  if (!sliding && o.openSign !== 1 && o.openSign !== -1) {
+    throw new Error(`hinged door at (${o.x}, ${o.z}) is missing a swing`);
+  }
+  if (!sliding && o.hinge !== "a0" && o.hinge !== "a1") {
+    throw new Error(`hinged door at (${o.x}, ${o.z}) is missing a hinge`);
+  }
+  const hingeAt = sliding ? -1 : leafHingeAt(o.axis, o.hinge ?? "a0");
+  // Leaf geometry is authored with the hinge at the origin and the panel toward +X.
+  // `ext` mirrors that panel when the hinge sits on the +X jamb.
+  const ext = sliding ? 1 : -hingeAt;
+  leaf.position.set((sliding ? -1 : hingeAt) * (o.w / 2 - fw), 0, 0);
+  const lx = (x: number) => ext * x;
   const mat = style === "interior" ? mats.woodMid : mats.woodDark;
-  const slab = addBox(leaf, slabW, slabH, 0.05, slabW / 2, -fw / 2, 0, mat, rec, {});
+  const slab = addBox(leaf, slabW, slabH, 0.05, lx(slabW / 2), -fw / 2, 0, mat, rec, {});
   slab.name = "doorSlab";
   if (style === "pivot" || style === "garden") {
-    addBox(leaf, 0.16, slabH - 0.36, 0.02, slabW * 0.28, -fw / 2, 0.02, mats.glassSimple, rec, {
+    addBox(leaf, 0.16, slabH - 0.36, 0.02, lx(slabW * 0.28), -fw / 2, 0.02, mats.glassSimple, rec, {
       noShadow: true,
     });
-    addBox(leaf, 0.16, slabH - 0.36, 0.02, slabW * 0.72, -fw / 2, 0.02, mats.glassSimple, rec, {
+    addBox(leaf, 0.16, slabH - 0.36, 0.02, lx(slabW * 0.72), -fw / 2, 0.02, mats.glassSimple, rec, {
       noShadow: true,
     });
-    addBox(leaf, 0.04, 0.22, 0.012, slabW - 0.16, 0.02, 0.04, mats.steel, rec, { noShadow: true });
-    addCyl(leaf, 0.011, 0.92, slabW - 0.16, 0.02, 0.055, mats.steel, { noShadow: true });
-    addCyl(leaf, 0.02, 0.05, 0.03, slabH / 2 - fw, 0, mats.steel, { noShadow: true });
-    addCyl(leaf, 0.024, 0.04, 0.03, -slabH / 2, 0, mats.steel, { noShadow: true });
-  } else if (style === "slider") {
+    addBox(leaf, 0.04, 0.22, 0.012, lx(slabW - 0.16), 0.02, 0.04, mats.steel, rec, {
+      noShadow: true,
+    });
+    addCyl(leaf, 0.011, 0.92, lx(slabW - 0.16), 0.02, 0.055, mats.steel, { noShadow: true });
+    addCyl(leaf, 0.02, 0.05, lx(0.03), slabH / 2 - fw, 0, mats.steel, { noShadow: true });
+    addCyl(leaf, 0.024, 0.04, lx(0.03), -slabH / 2, 0, mats.steel, { noShadow: true });
+  } else if (sliding) {
     addBox(
       leaf,
       slabW * 0.46,
@@ -164,12 +187,12 @@ function addDoor(parent: THREE.Object3D, o: DoorOpts, mats: Materials, rec: Hous
       { noShadow: true },
     );
   } else {
-    addCyl(leaf, 0.012, 0.16, slabW - 0.12, 0.02, 0.045, mats.steel, {
+    addCyl(leaf, 0.012, 0.16, lx(slabW - 0.12), 0.02, 0.045, mats.steel, {
       rotX: Math.PI / 2,
       noShadow: true,
     });
-    addCyl(leaf, 0.016, 0.14, 0.02, slabH * 0.22, 0.01, mats.steel, { noShadow: true });
-    addCyl(leaf, 0.016, 0.14, 0.02, -slabH * 0.18, 0.01, mats.steel, { noShadow: true });
+    addCyl(leaf, 0.016, 0.14, lx(0.02), slabH * 0.22, 0.01, mats.steel, { noShadow: true });
+    addCyl(leaf, 0.016, 0.14, lx(0.02), -slabH * 0.18, 0.01, mats.steel, { noShadow: true });
   }
   g.add(leaf);
   parent.add(g);
@@ -178,7 +201,8 @@ function addDoor(parent: THREE.Object3D, o: DoorOpts, mats: Materials, rec: Hous
     leaf,
     open: 0,
     target: 0,
-    hingeSign: 1,
+    openSign: o.openSign ?? 1,
+    closedX: leaf.position.x,
     // world-ish collision when closed
     x: o.x,
     z: o.z,
