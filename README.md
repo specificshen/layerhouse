@@ -54,19 +54,24 @@ bun build
 
 ```
 src/
-  index.html      页面与左侧转盘 HUD
-  styles.css
-  main.ts         入口：渲染、模式、剖切、漫游
-  types.ts        模式 / 时段 / 图层等联合类型
-  config.ts       尺寸、晨昏配方、机位、图层
-  geom.ts         几何与批量实例
-  materials.ts    材质与程序纹理
-  sky.ts          天空与太阳
-  house.ts        墙体、屋顶、门窗楼梯
-  furnish.ts      室内陈设
-  site.ts         场地、水庭、邻里
-  systems.ts      构造层：骨架、砌体、机电
-dist/             bun build 产出的单文件 HTML
+  index.html                 页面与左侧转盘 HUD
+  main.ts                    入口：组装渲染器、场景和动画循环
+  styles/app.css             HUD 样式
+  assets/                    favicon
+  config/                    尺寸、晨昏配方、机位、图层
+  types/                     模式 / 时段 / 图层等联合类型
+  app/                       机位、晨昏、剖切盖板、漫游、HUD、热点
+  scene/geom/                几何与批量实例
+  scene/materials/           程序纹理与材质
+  scene/sky/                 天空与太阳
+  scene/house/               墙体、屋面、门窗、楼梯
+  scene/furnish/             室内陈设
+  scene/site/                场地、水庭、栈道、围栏、树木、邻里
+  scene/systems/             构造层：骨架、砌体、机电
+shots/                       实机截图，不打进运行时
+dist/                        bun build 产出的单文件 HTML（不提交）
 ```
+
+开发与构建命令不变：`bun dev` 仍托管 `src/index.html`，`bun build` 仍输出 `dist/index.html`。
 
 旧的纯 JS 静态版仍保留在仓库旁的 `layerhouse/` 目录，作为对照，不是本工程的运行入口。

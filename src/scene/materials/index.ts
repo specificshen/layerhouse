@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { COLORS } from "./config";
+import { COLORS } from "../../config";
 import type {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
@@ -104,27 +104,31 @@ export function createTextures() {
   cedar.repeat.set(1, 2);
 
   const oak = canvas(1024, 512, (ctx, w, h) => {
-    ctx.fillStyle = "#9a6a42";
+    ctx.fillStyle = "#7a4e30";
     ctx.fillRect(0, 0, w, h);
-    const plankH = 64;
+    const plankH = 72;
     for (let y = 0; y < h; y += plankH) {
-      const r = 140 + Math.random() * 30;
-      const g = 90 + Math.random() * 20;
-      const b = 50 + Math.random() * 12;
+      const r = 118 + Math.random() * 36;
+      const g = 68 + Math.random() * 22;
+      const b = 34 + Math.random() * 14;
       ctx.fillStyle = `rgb(${r},${g},${b})`;
-      ctx.fillRect(0, y + 1, w, plankH - 2);
-      ctx.strokeStyle = "rgba(40,20,8,0.45)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-      for (let k = 0; k < 14; k++) {
-        ctx.strokeStyle = `rgba(60,30,10,${0.06 + Math.random() * 0.1})`;
+      ctx.fillRect(0, y + 2, w, plankH - 4);
+      ctx.fillStyle = "rgba(28,12,4,0.55)";
+      ctx.fillRect(0, y, w, 3);
+      for (let k = 0; k < 18; k++) {
+        ctx.strokeStyle = `rgba(48,22,8,${0.12 + Math.random() * 0.16})`;
+        ctx.lineWidth = 1 + Math.random();
         ctx.beginPath();
         const oy = y + 8 + Math.random() * (plankH - 16);
         ctx.moveTo(0, oy);
-        for (let x = 0; x < w; x += 20) ctx.lineTo(x, oy + Math.sin(x * 0.03 + k) * 1.5);
+        for (let x = 0; x < w; x += 16) ctx.lineTo(x, oy + Math.sin(x * 0.02 + k) * 2.2);
+        ctx.stroke();
+      }
+      if (Math.random() > 0.45) {
+        ctx.strokeStyle = "rgba(90,50,24,0.25)";
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * w, y + 6);
+        ctx.bezierCurveTo(w * 0.4, y + 20, w * 0.7, y + plankH - 20, w, y + plankH * 0.6);
         ctx.stroke();
       }
     }
@@ -143,38 +147,37 @@ export function createTextures() {
   oakRough.colorSpace = THREE.NoColorSpace;
   oakRough.repeat.set(4, 4);
 
-  const roof = canvas(256, 1024, (ctx, w, h) => {
-    ctx.fillStyle = "#2a3038";
+  const roof = canvas(256, 512, (ctx, w, h) => {
+    ctx.fillStyle = "#2c333c";
     ctx.fillRect(0, 0, w, h);
-    const seam = 32;
-    for (let x = 0; x < w; x += seam) {
-      const v = 38 + Math.random() * 10;
-      ctx.fillStyle = `rgb(${v},${v + 4},${v + 10})`;
-      ctx.fillRect(x, 0, seam - 3, h);
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(x + seam - 3, 0, 3, h);
-      ctx.fillStyle = "rgba(255,255,255,0.07)";
-      ctx.fillRect(x, 0, 2, h);
-    }
-    noise(ctx, w, h, 6, 0.5);
+    const grad = ctx.createLinearGradient(0, 0, w, 0);
+    grad.addColorStop(0, "rgba(255,255,255,0.05)");
+    grad.addColorStop(0.45, "rgba(0,0,0,0.08)");
+    grad.addColorStop(1, "rgba(255,255,255,0.04)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    noise(ctx, w, h, 8, 0.4);
   });
-  roof.repeat.set(18, 8);
+  roof.repeat.set(2, 2);
 
   const paver = canvas(512, 512, (ctx, w, h) => {
-    ctx.fillStyle = "#2e2c2a";
+    ctx.fillStyle = "#3a342e";
     ctx.fillRect(0, 0, w, h);
-    const bw = 64,
-      bh = 32;
+    const bw = 86,
+      bh = 44;
     for (let y = 0, row = 0; y < h; y += bh, row++) {
       const off = row % 2 ? bw / 2 : 0;
       for (let x = -bw; x < w; x += bw) {
-        const v = 70 + Math.random() * 22;
-        ctx.fillStyle = `rgb(${v},${v - 4},${v - 8})`;
-        ctx.fillRect(x + off + 1, y + 1, bw - 2, bh - 2);
+        const v = 92 + Math.random() * 28;
+        ctx.fillStyle = `rgb(${v + 6},${v},${v - 8})`;
+        ctx.fillRect(x + off + 2, y + 2, bw - 4, bh - 4);
+        ctx.strokeStyle = "rgba(20,14,10,0.45)";
+        ctx.strokeRect(x + off + 2, y + 2, bw - 4, bh - 4);
       }
     }
+    noise(ctx, w, h, 8, 0.6);
   });
-  paver.repeat.set(8, 10);
+  paver.repeat.set(6, 8);
 
   const grass = canvas(1024, 1024, (ctx, w, h) => {
     ctx.fillStyle = "#4a6c3c";
@@ -236,7 +239,35 @@ export function createTextures() {
   });
   batt.repeat.set(2, 4);
 
-  return { stucco, stuccoRough, cedar, oak, oakRough, roof, paver, grass, fabric, concrete, batt };
+  const fenceBoard = canvas(256, 512, (ctx, w, h) => {
+    ctx.fillStyle = "#6a5344";
+    ctx.fillRect(0, 0, w, h);
+    const plank = 28;
+    for (let x = 0; x < w; x += plank) {
+      const shade = 96 + Math.random() * 28;
+      ctx.fillStyle = `rgb(${shade + 18},${shade},${shade - 16})`;
+      ctx.fillRect(x + 1, 0, plank - 2, h);
+      ctx.fillStyle = "rgba(30,16,8,0.35)";
+      ctx.fillRect(x, 0, 2, h);
+    }
+    noise(ctx, w, h, 8, 0.5);
+  });
+  fenceBoard.repeat.set(1, 1);
+
+  return {
+    stucco,
+    stuccoRough,
+    cedar,
+    oak,
+    oakRough,
+    roof,
+    paver,
+    grass,
+    fabric,
+    concrete,
+    batt,
+    fenceBoard,
+  };
 }
 
 export interface SceneTextures {
@@ -251,6 +282,7 @@ export interface SceneTextures {
   fabric: CanvasTexture;
   concrete: CanvasTexture;
   batt: CanvasTexture;
+  fenceBoard: CanvasTexture;
 }
 
 export interface Materials {
@@ -260,7 +292,9 @@ export interface Materials {
   interior: MeshStandardMaterial;
   floor: MeshStandardMaterial;
   roof: MeshStandardMaterial;
+  roofSeam: MeshStandardMaterial;
   fascia: MeshStandardMaterial;
+  soffit: MeshStandardMaterial;
   frame: MeshStandardMaterial;
   glass: MeshPhysicalMaterial;
   glassSimple: MeshPhysicalMaterial;
@@ -286,6 +320,7 @@ export interface Materials {
   lampBulb: MeshStandardMaterial;
   grass: MeshStandardMaterial;
   canopy: MeshStandardMaterial;
+  canopyDeep: MeshStandardMaterial;
   pine: MeshStandardMaterial;
   trunk: MeshStandardMaterial;
   soil: MeshStandardMaterial;
@@ -302,6 +337,8 @@ export interface Materials {
   sectionCap: THREE.MeshBasicMaterial;
   sectionLine: LineBasicMaterial;
   warmFill: MeshStandardMaterial;
+  pathLight: MeshStandardMaterial;
+  poolTile: MeshStandardMaterial;
 }
 
 export function createMaterials(textures: SceneTextures): Materials {
@@ -355,15 +392,27 @@ export function createMaterials(textures: SceneTextures): Materials {
   const roof = std({
     color: 0xffffff,
     map: t.roof,
-    roughness: 0.55,
-    metalness: 0.18,
-    envMapIntensity: 0.55,
+    roughness: 0.42,
+    metalness: 0.62,
+    envMapIntensity: 0.85,
+  });
+  const roofSeam = std({
+    color: 0x8e98a4,
+    roughness: 0.28,
+    metalness: 0.78,
+    envMapIntensity: 1,
   });
 
   const fascia = std({
     color: COLORS.fascia,
-    roughness: 0.5,
-    metalness: 0.15,
+    roughness: 0.42,
+    metalness: 0.28,
+    envMapIntensity: 0.55,
+  });
+  const soffit = std({
+    color: 0x4a4038,
+    roughness: 0.72,
+    metalness: 0.04,
   });
 
   const frame = std({
@@ -390,40 +439,43 @@ export function createMaterials(textures: SceneTextures): Materials {
 
   // Cheaper window pane used when we need interior glow to read clearly
   const glassSimple = phys({
-    color: 0x9aafbe,
-    roughness: 0.08,
-    metalness: 0.1,
+    color: 0xc5d5e2,
+    roughness: 0.04,
+    metalness: 0.04,
     transparent: true,
-    opacity: 0.38,
-    envMapIntensity: 1.4,
+    opacity: 0.18,
+    envMapIntensity: 1.1,
     transmission: 0,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
 
   const glassWarm = phys({
-    color: 0xffd8a0,
-    emissive: 0xffc078,
+    color: 0xffe2c2,
+    emissive: 0xffb878,
     emissiveIntensity: 0,
-    roughness: 0.12,
-    metalness: 0.05,
+    roughness: 0.2,
+    metalness: 0.02,
     transparent: true,
-    opacity: 0.42,
-    envMapIntensity: 0.8,
+    opacity: 0.1,
+    envMapIntensity: 0.4,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
 
   const woodDark = std({ color: COLORS.woodDark, roughness: 0.48, metalness: 0.05 });
-  const woodMid = std({ color: COLORS.woodMid, roughness: 0.52, metalness: 0.04, map: t.oak });
+  const woodMid = std({ color: 0xffffff, roughness: 0.55, metalness: 0.02, map: t.oak });
   const woodMidMap = t.oak.clone();
   woodMidMap.repeat.set(1, 1);
   woodMid.map = woodMidMap;
   const steel = std({ color: COLORS.steel, roughness: 0.32, metalness: 0.7, envMapIntensity: 0.9 });
   const paver = std({ color: 0xffffff, map: t.paver, roughness: 0.86, metalness: 0.02 });
   const fence = std({
-    color: COLORS.fence,
-    roughness: 0.82,
+    color: 0xffffff,
+    map: t.fenceBoard,
+    roughness: 0.78,
     metalness: 0.02,
-    envMapIntensity: 0.15,
+    envMapIntensity: 0.2,
   });
   const deck = std({ color: COLORS.deck, map: t.oak, roughness: 0.62, metalness: 0.0 });
   const deckMap = t.oak.clone();
@@ -493,6 +545,7 @@ export function createMaterials(textures: SceneTextures): Materials {
   });
   const grass = std({ color: 0xffffff, map: t.grass, roughness: 0.95, metalness: 0 });
   const canopy = std({ color: COLORS.canopy, roughness: 0.88, metalness: 0, flatShading: true });
+  const canopyDeep = std({ color: 0x214418, roughness: 0.9, metalness: 0, flatShading: true });
   const pine = std({ color: COLORS.pine, roughness: 0.9, metalness: 0, flatShading: true });
   const trunk = std({ color: COLORS.trunk, roughness: 0.85, metalness: 0 });
   const soil = std({ color: COLORS.soil, roughness: 1, metalness: 0 });
@@ -537,6 +590,20 @@ export function createMaterials(textures: SceneTextures): Materials {
     metalness: 0,
     side: THREE.DoubleSide,
   });
+  const pathLight = std({
+    color: 0xffe2b8,
+    emissive: 0xffc888,
+    emissiveIntensity: 0,
+    roughness: 0.35,
+    metalness: 0.05,
+  });
+  const poolTile = std({
+    color: 0x1a8f8a,
+    emissive: 0x14c8be,
+    emissiveIntensity: 0,
+    roughness: 0.35,
+    metalness: 0.08,
+  });
 
   const mats = {
     stucco,
@@ -545,7 +612,9 @@ export function createMaterials(textures: SceneTextures): Materials {
     interior,
     floor,
     roof,
+    roofSeam,
     fascia,
+    soffit,
     frame,
     glass,
     glassSimple,
@@ -571,6 +640,7 @@ export function createMaterials(textures: SceneTextures): Materials {
     lampBulb,
     grass,
     canopy,
+    canopyDeep,
     pine,
     trunk,
     soil,
@@ -587,6 +657,8 @@ export function createMaterials(textures: SceneTextures): Materials {
     sectionCap,
     sectionLine,
     warmFill,
+    pathLight,
+    poolTile,
   };
 
   // All house materials need clipping in cut view

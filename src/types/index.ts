@@ -76,6 +76,15 @@ export interface ClipBox {
   max: THREE.Vector3;
 }
 
+/** Oriented box used for section caps on rotated pieces (roof slopes, rakes, rails). */
+export interface OrientedClip {
+  center: THREE.Vector3;
+  half: THREE.Vector3;
+  quat: THREE.Quaternion;
+  /** Added to center.y while the rigid roof is lifted. */
+  lifts: boolean;
+}
+
 export interface CollisionBox {
   x0: number;
   x1: number;
@@ -164,7 +173,11 @@ export interface WaterRecord {
   overlay: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshPhysicalMaterial>;
   pool: THREE.Object3D;
   poolTint: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
-  poolFloor: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
+  poolFloor: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+  poolMid: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+  poolDeep: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+  caustic: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
+  poolSheen: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial>;
   group: THREE.Group;
 }
 
@@ -172,6 +185,9 @@ export type HouseGroups = Record<LayerId, THREE.Group>;
 
 export interface HouseRecord {
   clipBoxes: ClipBox[];
+  /** Clip boxes parented to the roof group; section caps follow `roofGroup.position.y`. */
+  roofClipBoxes: ClipBox[];
+  orientedClips: OrientedClip[];
   collisions: CollisionBox[];
   floors: FloorPad[];
   stairs: StairRun[];
@@ -243,7 +259,7 @@ export interface DemoApi {
   setLayer: (id: LayerId) => void;
   setCut: (dir: CutDir, value: number) => void;
   snapCam: (pos: Vec3 | number[], target: Vec3 | number[]) => void;
-  walkTo: (x: number, z: number, yaw: number) => void;
+  walkTo: (x: number, z: number, yaw: number, pitch?: number) => void;
   openDoor: () => void;
   setRoof: (y: number) => void;
   readonly state: DemoState;
