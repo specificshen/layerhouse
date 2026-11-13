@@ -4,7 +4,7 @@ import { CARPORT, COURT, LOT, MAIN, POOL, WATER_EDGE } from "../../config";
 import type { HouseGroups, HouseRecord } from "../../types";
 import { addBox, addCyl, GEO } from "../geom";
 import type { Materials } from "../materials";
-import { buildCarport, buildDock, buildFence } from "./hardscape";
+import { buildCarport, buildDock, buildFence, buildLotDressing } from "./hardscape";
 import { maple, pine, planter, shrub } from "./trees";
 
 export function buildSite(
@@ -160,6 +160,7 @@ export function buildSite(
 
   // ——— Carport ———
   buildCarport(site, mats, rec);
+  buildLotDressing(site, land, mats, rec);
 
   // ——— Dock ———
   buildDock(site, mats, rec);

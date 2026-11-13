@@ -75,6 +75,17 @@ export function syncOpenRoofLighting(s: Session) {
   }
 }
 
+function syncLawnBands(s: Session) {
+  const tint = s.mats.grass.color;
+  s.scene.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const mat = obj.material;
+    if (!(mat instanceof THREE.MeshStandardMaterial) || mat.name !== "lawnBand") return;
+    const scale = mat.userData.scale;
+    mat.color.copy(tint).multiplyScalar(typeof scale === "number" ? scale : 1);
+  });
+}
+
 function namedLights(s: Session, id: TimeId) {
   const t = TOD[id];
   s.scene.traverse((o) => {
@@ -105,11 +116,12 @@ export function applyTime(s: Session, id: TimeId) {
   s.fill.intensity = t.fillInt;
   s.renderer.toneMappingExposure = t.exposure;
   if (s.scene.fog instanceof THREE.FogExp2) {
-    s.scene.fog.color.setHex(t.fog);
+    s.scene.fog.color.setHex(id === "day" ? 0xe6dfd4 : t.fog);
     s.scene.fog.density = t.fogDen;
   }
   setNeighborGlow(s.neighbors, t.windowWarm * 0.9);
   setGrassColor(s.mats, t.grass);
+  syncLawnBands(s);
   namedLights(s, id);
   if (s.rec.water) {
     s.rec.water.overlay.material.color.setHex(t.waterTint);
