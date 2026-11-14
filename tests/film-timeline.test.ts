@@ -104,8 +104,14 @@ describe("film timeline", () => {
     expect(exploded.mode).toBe("exploded");
     expect(exploded.motion).toBe("hold");
     const mid = sampleFilm((exploded.start + exploded.end) / 2);
-    expect(mid.position).toEqual([...CAM.explodedStreet.pos]);
-    expect(mid.target).toEqual([...CAM.explodedStreet.target]);
+    expect(mid.position[1]).toBeGreaterThan(13);
+    expect(mid.position[2]).toBeGreaterThan(18);
+    expect(distance3(mid.position, [...CAM.explodedStreet.pos])).toBeGreaterThan(10);
+    for (let t = lift.start; t < beat("to-hero").start; t += 0.2) {
+      const sample = sampleFilm(t);
+      expect(sample.position[1]).toBeGreaterThan(12);
+      expect(sample.position[2]).toBeGreaterThan(16);
+    }
     expect(beat("depart").mode).toBe("exploded");
     expect(roofSeat("depart")).toBe("up");
     const travel = beat("to-hero");

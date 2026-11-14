@@ -57,17 +57,17 @@ function pose(x: number, y: number, z: number, tx: number, ty: number, tz: numbe
 
 const HERO: FilmPose = { position: CAM.exterior.pos, target: CAM.exterior.target };
 const SECTION: FilmPose = { position: CAM.cutSide.pos, target: CAM.cutSide.target };
-const DOLLHOUSE: FilmPose = { position: CAM.explodedStreet.pos, target: CAM.explodedStreet.target };
 
 const OPENING: FilmPose = pose(24.2, 10.4, 22.4, -1.1, 3.5, -2.6);
 const COURT_END: FilmPose = pose(17.2, 7.15, 15.5, 0.15, 2.55, -1.7);
 const ENTRY: FilmPose = pose(-1.0, 1.62, 9.7, -1.0, 1.38, 6.15);
-const LIVING: FilmPose = pose(-3.55, 1.68, 3.85, -6.75, 1.42, 1.85);
+const LIVING: FilmPose = pose(-2.8, 1.62, 4.9, -6.4, 1.38, 1.6);
 const SECTION_NEAR: FilmPose = pose(0.85, 7.15, 15.6, 0.2, 3.05, 0.35);
 /** High south view. The roof is still on, and the camera is well clear of it. */
 const WIDE: FilmPose = pose(12.5, 16.5, 24, -0.4, 3.2, -1.2);
-/** Pulled back from the dollhouse before the roof eases down. */
-const PULL: FilmPose = pose(18, 13.5, 22, 0.2, 3.0, -1.2);
+/** Whole house from the south. Both floors and the floating roof stay in frame. */
+const OPEN_HOUSE: FilmPose = pose(18, 14.2, 22.2, 0.2, 3.8, -1.2);
+const DEPART_WIDE: FilmPose = pose(20.4, 15.6, 24.8, 0.35, 4.1, -0.9);
 
 /**
  * Whole-house introduction. Times are seconds. Poses chain: each beat leaves
@@ -95,7 +95,8 @@ const DRAFTS: readonly BeatDraft[] = [
       pose(15.2, 3.6, -6.4, 2.2, 1.15, -6.4),
       pose(3.4, 3.8, -17.2, 1.6, 1.35, -4.2),
       pose(-14.2, 5.6, -16.4, -3.2, 1.7, -5.4),
-      pose(-18.2, 6.6, 8.8, -1.8, 2.8, 1.2),
+      pose(-18.8, 6.9, -1.6, -3.2, 2.7, 0.6),
+      pose(-16.8, 6.0, 8.2, -2.2, 2.5, 2.4),
     ],
     pose: pose(-0.85, 2.25, 14.05, -1.0, 1.5, 6.1),
   },
@@ -116,10 +117,9 @@ const DRAFTS: readonly BeatDraft[] = [
     title: "off",
     motion: "track",
     via: [
-      pose(-1.0, 1.64, 6.9, -1.05, 1.48, 4.5),
-      pose(-1.0, 1.66, 5.15, -1.05, 1.46, 2.75),
-      pose(-1.05, 1.67, 4.05, -1.1, 1.45, 1.7),
-      pose(-1.2, 1.67, 3.5, -3.6, 1.42, 2.6),
+      pose(-1.0, 1.64, 6.9, 1.7, 1.55, 1.6),
+      pose(-1.0, 1.66, 5.05, 1.8, 1.48, 0.4),
+      pose(-1.15, 1.66, 3.7, -4.2, 1.4, 0.6),
     ],
     pose: LIVING,
   },
@@ -160,7 +160,7 @@ const DRAFTS: readonly BeatDraft[] = [
     timeId: "day",
     title: "off",
     motion: "track",
-    pose: DOLLHOUSE,
+    pose: OPEN_HOUSE,
   },
   {
     id: "exploded",
@@ -177,7 +177,7 @@ const DRAFTS: readonly BeatDraft[] = [
     timeId: "day",
     title: "off",
     motion: "track",
-    pose: PULL,
+    pose: DEPART_WIDE,
   },
   {
     id: "to-hero",
