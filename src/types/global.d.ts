@@ -18,6 +18,11 @@ export interface DemoApi {
   /** World Y extents of meshes whose names start with `prefix`. */
   measure: (prefix: string) => Record<string, { y0: number; y1: number }>;
   readonly state: DemoState;
+  startFilm: () => void;
+  stopFilm: () => void;
+  /** Jump the film clock while it is playing. Reaching the end finishes on the hero. */
+  seekFilm: (seconds: number) => void;
+  readonly filmState: { playing: boolean; time: number };
 }
 
 declare global {

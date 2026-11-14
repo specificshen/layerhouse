@@ -2,6 +2,19 @@ import type { Session } from "@/world/session";
 import { applyWalkLook } from "./apply-walk-look";
 import { pitchDelta, yawDelta } from "./look";
 
+/**
+ * Pointer lock is optional. The call returns a Promise; a sync try/catch does
+ * not handle rejection, and bun dev turns that into an overlay on the scene.
+ */
+export function requestOptionalPointerLock(canvas: HTMLCanvasElement): void {
+  try {
+    const pending = canvas.requestPointerLock();
+    void pending.catch(() => {});
+  } catch {
+    /* pointer lock is optional */
+  }
+}
+
 export function bindWalkPointer(s: Session) {
   let draggingLook = false;
   let lx = 0;
@@ -11,11 +24,7 @@ export function bindWalkPointer(s: Session) {
     draggingLook = true;
     lx = e.clientX;
     ly = e.clientY;
-    try {
-      s.canvas.requestPointerLock();
-    } catch {
-      /* pointer lock is optional */
-    }
+    requestOptionalPointerLock(s.canvas);
   });
   document.addEventListener("pointerlockchange", () => {
     s.walk.pointer = document.pointerLockElement === s.canvas;

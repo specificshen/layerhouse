@@ -5,6 +5,7 @@ import { mustEl } from "@/ui/dom";
 export interface HotspotController {
   onMouseMove: (ev: MouseEvent) => void;
   updateLabel: () => void;
+  dismiss: () => void;
 }
 
 export function createHotspots(
@@ -72,5 +73,10 @@ export function createHotspots(
       placeLabel();
     },
     updateLabel: placeLabel,
+    dismiss() {
+      hover = null;
+      outline.visible = false;
+      hotLabel.style.display = "none";
+    },
   };
 }

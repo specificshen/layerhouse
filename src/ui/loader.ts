@@ -51,9 +51,49 @@ export function paintLoader(done: number, total: number, status: string) {
   if (el) el.textContent = status;
 }
 
-export function nextPaint(): Promise<void> {
+/** Hidden tabs do not run animation frames. Yield on this timer instead of waiting forever. */
+export const PAINT_FALLBACK_MS = 80;
+
+export interface PaintClock {
+  requestFrame: (callback: () => void) => number;
+  cancelFrame: (id: number) => void;
+  setTimer: (callback: () => void, ms: number) => number;
+  clearTimer: (id: number) => void;
+}
+
+function browserPaintClock(): PaintClock {
+  return {
+    requestFrame: (callback) => requestAnimationFrame(() => callback()),
+    cancelFrame: (id) => cancelAnimationFrame(id),
+    setTimer: (callback, ms) => window.setTimeout(callback, ms),
+    clearTimer: (id) => window.clearTimeout(id),
+  };
+}
+
+/**
+ * Prefer a real paint. If `requestAnimationFrame` is starved (hidden tab, locked
+ * machine, sleeping display), resolve on {@link PAINT_FALLBACK_MS} so warmup continues.
+ */
+export function nextPaint(clock: PaintClock = browserPaintClock()): Promise<void> {
   return new Promise((resolve) => {
-    requestAnimationFrame(() => resolve());
+    let settled = false;
+    let frameId = 0;
+    let timerId = 0;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    frameId = clock.requestFrame(() => {
+      if (settled) return;
+      clock.clearTimer(timerId);
+      finish();
+    });
+    timerId = clock.setTimer(() => {
+      if (settled) return;
+      clock.cancelFrame(frameId);
+      finish();
+    }, PAINT_FALLBACK_MS);
   });
 }
 
