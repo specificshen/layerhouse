@@ -37,9 +37,4 @@ export const COLORS = {
   pine: 0x1e4a28,
   trunk: 0x4a3428,
   soil: 0x3a3028,
-  neighborA: 0xc8b8a4,
-  neighborB: 0xb0a498,
-  neighborC: 0x9a8e84,
-  neighborRoof: 0x6a4038,
-  neighborRoofB: 0x5a5550,
 };

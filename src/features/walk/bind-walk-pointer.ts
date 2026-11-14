@@ -1,5 +1,6 @@
 import type { Session } from "@/world/session";
 import { applyWalkLook } from "./apply-walk-look";
+import { pitchDelta, yawDelta } from "./look";
 
 export function bindWalkPointer(s: Session) {
   let draggingLook = false;
@@ -32,8 +33,8 @@ export function bindWalkPointer(s: Session) {
       lx = e.clientX;
       ly = e.clientY;
     } else return;
-    s.walk.yaw -= dx * 0.0022;
-    s.walk.pitch = Math.max(-1.2, Math.min(1.2, s.walk.pitch - dy * 0.0022));
+    s.walk.yaw += yawDelta(dx);
+    s.walk.pitch = Math.max(-1.2, Math.min(1.2, s.walk.pitch + pitchDelta(dy)));
     applyWalkLook(s);
   });
   window.addEventListener("mouseup", () => {

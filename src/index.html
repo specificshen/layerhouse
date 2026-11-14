@@ -14,7 +14,8 @@
       <div class="inner">
         <h2 id="loader-title"></h2>
         <p id="loader-sub"></p>
-        <div class="bar"><i id="loadbar"></i></div>
+        <p id="loader-status" role="status" aria-live="polite">正在打开 · Opening</p>
+        <div class="bar"><i id="loadbar" style="width: 6%"></i></div>
         <button id="skip" type="button">跳过 Skip</button>
       </div>
     </div>
@@ -185,6 +186,10 @@
       <div class="walk-bar" id="walk-bar">
         <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7)">第一人称漫游</span>
         <button type="button" id="btn-return">返回视图 · Esc</button>
+      </div>
+      <div id="door-prompt" class="door-prompt" aria-hidden="true">
+        <span class="door-key">E</span>
+        <span class="door-phrase">按 E 开门</span>
       </div>
       <div class="walk-hints" id="walk-hints">
         <div class="kbd"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</div>

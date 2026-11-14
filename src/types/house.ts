@@ -172,5 +172,4 @@ export interface HouseRecord {
   poolMeta?: PoolMeta;
   water?: WaterRecord;
   ground?: THREE.Mesh;
-  neighbors?: THREE.Group;
 }

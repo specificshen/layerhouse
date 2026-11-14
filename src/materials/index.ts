@@ -339,11 +339,6 @@ export interface Materials {
   linen: MeshStandardMaterial;
   cushionB: MeshStandardMaterial;
   cushionC: MeshStandardMaterial;
-  neighborA: MeshStandardMaterial;
-  neighborB: MeshStandardMaterial;
-  neighborC: MeshStandardMaterial;
-  neighborRoof: MeshStandardMaterial;
-  neighborRoofB: MeshStandardMaterial;
   waterTint: MeshPhysicalMaterial;
   sectionCap: THREE.MeshBasicMaterial;
   sectionLine: LineBasicMaterial;
@@ -564,11 +559,6 @@ export function createMaterials(textures: SceneTextures): Materials {
   const linen = std({ color: 0xe8e0d4, roughness: 0.85, metalness: 0 });
   const cushionB = std({ color: 0x3d4a42, roughness: 0.8, metalness: 0 });
   const cushionC = std({ color: 0x8a5a3a, roughness: 0.8, metalness: 0 });
-  const neighborA = std({ color: COLORS.neighborA, roughness: 0.86, metalness: 0 });
-  const neighborB = std({ color: COLORS.neighborB, roughness: 0.86, metalness: 0 });
-  const neighborC = std({ color: COLORS.neighborC, roughness: 0.86, metalness: 0 });
-  const neighborRoof = std({ color: COLORS.neighborRoof, roughness: 0.7, metalness: 0.08 });
-  const neighborRoofB = std({ color: COLORS.neighborRoofB, roughness: 0.7, metalness: 0.08 });
   const waterTint = new THREE.MeshPhysicalMaterial({
     color: 0x3a5a62,
     roughness: 0.12,
@@ -659,11 +649,6 @@ export function createMaterials(textures: SceneTextures): Materials {
     linen,
     cushionB,
     cushionC,
-    neighborA,
-    neighborB,
-    neighborC,
-    neighborRoof,
-    neighborRoofB,
     waterTint,
     sectionCap,
     sectionLine,

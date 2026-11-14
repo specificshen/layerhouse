@@ -1,11 +1,15 @@
 import * as THREE from "three";
 import type { Session } from "@/world/session";
+import { lookDirection } from "./look";
 
 export function applyWalkLook(s: Session) {
-  const cy = Math.cos(s.walk.pitch);
-  const dx = Math.sin(s.walk.yaw) * cy;
-  const dy = Math.sin(s.walk.pitch);
-  const dz = -Math.cos(s.walk.yaw) * cy;
-  s.camera.lookAt(s.camera.position.x + dx, s.camera.position.y + dy, s.camera.position.z + dz);
-  s.orbit.target.copy(s.camera.position).add(new THREE.Vector3(dx, dy, dz).multiplyScalar(4));
+  const dir = lookDirection(s.walk.yaw, s.walk.pitch);
+  s.camera.lookAt(
+    s.camera.position.x + dir.x,
+    s.camera.position.y + dir.y,
+    s.camera.position.z + dir.z,
+  );
+  s.orbit.target
+    .copy(s.camera.position)
+    .add(new THREE.Vector3(dir.x, dir.y, dir.z).multiplyScalar(4));
 }

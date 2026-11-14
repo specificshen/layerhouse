@@ -1,7 +1,7 @@
 import type { LayerId, TimeId, ViewMode } from "@/types";
 
-export const TITLE = "层宅";
-export const SUBTITLE = "Layer House";
+export const TITLE = "浅庭";
+export const SUBTITLE = "Light Court";
 
 export const STATS = {
   beds: 3,

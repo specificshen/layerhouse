@@ -3,12 +3,19 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CAM, ROOF_LIFT } from "@/config";
 import {
   applyQualityQuery,
+  applyRendererSize,
+  createFrameGate,
   createPipeline,
   createRenderer,
+  frameAction,
+  markDrawn,
+  noteInput,
   previewBackendName,
   readBackendName,
+  scheduleDelayMs,
   wantsWebGLBackend,
 } from "@/engine";
+import type { FrameGate } from "@/engine";
 import { lerpCam, orbitPreset, tickCamera } from "@/features/camera";
 import { createHotspots } from "@/features/hotspots";
 import { setHouseVisibility } from "@/features/layers/visibility";
@@ -16,6 +23,7 @@ import {
   bindWalkPointer,
   enterWalk,
   exitWalk,
+  syncDoorPrompt,
   toggleNearestDoor,
   updateDoors,
   updateWalk,
@@ -24,7 +32,7 @@ import { createMaterials, createTextures } from "@/materials";
 import { furnishHouse } from "@/scene/furnish";
 import { buildHouse } from "@/scene/house";
 import { buildLandscape, buildSite, buildWater } from "@/scene/site";
-import { buildNeighbors } from "@/scene/site/neighbors";
+import { buildContext } from "@/scene/site/context";
 import { createSky, createSunDisc } from "@/scene/sky";
 import { buildSystems } from "@/scene/systems";
 import type { ViewMode } from "@/types";
@@ -32,6 +40,7 @@ import { cutPanel } from "@/ui/cut-panel";
 import { mustEl } from "@/ui/dom";
 import { createHelpDialog } from "@/ui/help-dialog";
 import { bindHud, syncModeChrome } from "@/ui/hud";
+import { hideLoader, loadStatus, nextPaint, paintLoader, showLoadStep } from "@/ui/loader";
 import {
   addRoomBounce,
   applyTime,
@@ -43,208 +52,297 @@ import {
   syncOpenRoofLighting,
   updateCut,
 } from "@/world";
+import { presentExplodedDusk, warmupPlan } from "@/world/warm";
 
 const params = new URLSearchParams(location.search);
 applyQualityQuery(params);
 const forceWebGL = wantsWebGLBackend(params);
 
-const canvas = mustEl<HTMLCanvasElement>("c");
-const renderer = createRenderer(canvas, forceWebGL);
+async function boot() {
+  mustEl<HTMLElement>("skip").addEventListener("click", hideLoader);
+  const plan = warmupPlan();
+  const total = 5 + plan.length + 1;
+  let step = 0;
+  const mark = async (status: string) => {
+    await showLoadStep(step, total, status);
+    step += 1;
+  };
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.12, 600);
-camera.position.set(...CAM.exploded.pos);
-const orbit = new OrbitControls(camera, canvas);
-orbit.enableDamping = true;
-orbit.dampingFactor = 0.08;
-orbit.target.set(...CAM.exploded.target);
-orbit.maxPolarAngle = Math.PI * 0.49;
-orbit.minDistance = 2.4;
-orbit.maxDistance = 80;
-orbit.mouseButtons = {
-  LEFT: THREE.MOUSE.ROTATE,
-  MIDDLE: THREE.MOUSE.DOLLY,
-  RIGHT: THREE.MOUSE.PAN,
-};
+  await mark(loadStatus("scene"));
+  const canvas = mustEl<HTMLCanvasElement>("c");
+  const renderer = createRenderer(canvas, forceWebGL);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.12, 600);
+  camera.position.set(...CAM.exploded.pos);
+  const orbit = new OrbitControls(camera, canvas);
+  orbit.enableDamping = true;
+  orbit.dampingFactor = 0.08;
+  orbit.target.set(...CAM.exploded.target);
+  orbit.maxPolarAngle = Math.PI * 0.49;
+  orbit.minDistance = 2.4;
+  orbit.maxDistance = 80;
+  orbit.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN,
+  };
 
-const sky = createSky();
-scene.add(sky.mesh);
-const sunDisc = createSunDisc();
-scene.add(sunDisc);
-const { hemi, amb, sun, fill } = createDuskLights(scene);
+  const sky = createSky();
+  scene.add(sky.mesh);
+  const sunDisc = createSunDisc();
+  scene.add(sunDisc);
+  const { hemi, amb, sun, fill } = createDuskLights(scene);
+  const textures = createTextures();
+  const mats = createMaterials(textures);
+  const rec = buildHouse(mats);
+  furnishHouse(rec.groups, mats, rec);
 
-const textures = createTextures();
-const mats = createMaterials(textures);
-const rec = buildHouse(mats);
-furnishHouse(rec.groups, mats, rec);
-buildSite(rec.groups, mats, rec);
-buildLandscape(rec.groups, mats, rec);
-buildSystems(rec.groups, mats, rec);
+  await mark(loadStatus("site"));
+  buildSite(rec.groups, mats, rec);
 
-const houseRoot = new THREE.Group();
-houseRoot.name = "houseRoot";
-for (const group of Object.values(rec.groups)) houseRoot.add(group);
-scene.add(houseRoot);
+  await mark(loadStatus("trees"));
+  buildLandscape(rec.groups, mats, rec);
 
-const neighbors = buildNeighbors(mats, rec);
-scene.add(neighbors);
-const waterGrp = buildWater(rec);
-scene.add(waterGrp);
+  await mark(loadStatus("systems"));
+  buildSystems(rec.groups, mats, rec);
+  const houseRoot = new THREE.Group();
+  houseRoot.name = "houseRoot";
+  for (const group of Object.values(rec.groups)) houseRoot.add(group);
+  scene.add(houseRoot);
+  const context = buildContext(mats, rec);
+  scene.add(context);
+  const waterGrp = buildWater(rec);
+  scene.add(waterGrp);
 
-const bloom = { strength: 0.22, radius: 0.35, threshold: 0.88 };
-const { pipeline, bloomNode } = createPipeline(renderer, scene, camera, bloom);
+  const bloom = { strength: 0.22, radius: 0.35, threshold: 0.88 };
+  const { pipeline, bloomNode } = createPipeline(renderer, scene, camera, bloom);
+  const session = createSession({
+    canvas,
+    renderer,
+    scene,
+    camera,
+    orbit,
+    pipeline,
+    bloom,
+    bloomNode,
+    backendName: previewBackendName(forceWebGL),
+    hemi,
+    amb,
+    sun,
+    fill,
+    sky,
+    sunDisc,
+    mats,
+    rec,
+    context,
+    waterGrp,
+  });
+  mountClipGroup(session);
+  addRoomBounce(scene);
 
-const session = createSession({
-  canvas,
-  renderer,
-  scene,
-  camera,
-  orbit,
-  pipeline,
-  bloom,
-  bloomNode,
-  backendName: previewBackendName(forceWebGL),
-  hemi,
-  amb,
-  sun,
-  fill,
-  sky,
-  sunDisc,
-  mats,
-  rec,
-  neighbors,
-  waterGrp,
-});
-mountClipGroup(session);
-addRoomBounce(scene);
+  const hotspots = createHotspots(scene, camera, canvas, rec, () => session.mode);
 
-const hotspots = createHotspots(scene, camera, canvas, rec, () => session.mode);
-
-function setMode(next: ViewMode) {
-  if (next === session.mode && next !== "cut") return;
-  if (session.mode === "walk" && next !== "walk") exitWalk(session);
-  if (next !== "walk" && session.mode !== "boot" && session.mode !== "walk")
-    session.prevMode = session.mode;
-  session.mode = next;
-  syncModeChrome(next);
-  setHouseVisibility(session);
-  if (next === "cut") updateCut(session);
-  else {
-    session.clipPlanes.length = 0;
-    session.clipGroup.enabled = false;
-    session.capGroup.clear();
-  }
-  if (next === "walk") enterWalk(session);
-  else {
-    orbit.enabled = true;
-    const preset = orbitPreset(next, session.cutDir);
-    lerpCam(session, preset.pos, preset.target);
-  }
-}
-
-const help = createHelpDialog();
-
-bindHud({
-  setMode,
-  applyTime: (id) => applyTime(session, id),
-  resetView() {
-    if (session.mode === "walk") setMode(session.prevMode);
-    const preset = orbitPreset(session.mode, session.cutDir);
-    lerpCam(session, preset.pos, preset.target, 0.7);
-  },
-  setCutDir(dir) {
-    session.cutDir = dir;
-    const range = cutRange(session);
-    session.cutValue = range.def;
-    const slider = mustEl<HTMLInputElement>("cut-slider");
-    slider.value = String(cutPanel(range, session.cutValue, "meters"));
-    updateCut(session);
-    const key = dir === "side" ? "cutSide" : dir === "front" ? "cutFront" : "cut";
-    lerpCam(session, CAM[key].pos, CAM[key].target, 0.8);
-  },
-  onCutInput(value) {
-    session.cutValue = value;
-    updateCut(session);
-  },
-  onReturn: () => setMode(session.prevMode || "exploded"),
-  getCutRange: () => cutRange(session),
-  getLayer: () => session.xrayLayer,
-  setLayer(id) {
-    session.xrayLayer = id;
+  function setMode(next: ViewMode) {
+    if (next === session.mode && next !== "cut") return;
+    if (session.mode === "walk" && next !== "walk") exitWalk(session);
+    if (next !== "walk" && session.mode !== "boot" && session.mode !== "walk")
+      session.prevMode = session.mode;
+    session.mode = next;
+    syncModeChrome(next);
     setHouseVisibility(session);
-  },
-});
-
-bindWalkPointer(session);
-canvas.addEventListener("mousemove", (event) => hotspots.onMouseMove(event));
-
-window.addEventListener("keydown", (event) => {
-  session.walk.keys[event.code] = true;
-  if (event.code === "Escape") {
-    if (help.isOpen()) help.close();
-    else if (session.mode === "walk") setMode(session.prevMode || "exploded");
+    if (next === "cut") updateCut(session);
+    else {
+      session.clipPlanes.length = 0;
+      session.clipGroup.enabled = false;
+      session.capGroup.clear();
+    }
+    if (next === "walk") enterWalk(session);
+    else {
+      orbit.enabled = true;
+      const preset = orbitPreset(next, session.cutDir);
+      lerpCam(session, preset.pos, preset.target);
+    }
   }
-  if ((event.code === "KeyE" || event.code === "KeyF") && session.mode === "walk") {
-    toggleNearestDoor(session);
+
+  const help = createHelpDialog();
+  bindHud({
+    setMode,
+    applyTime: (id) => applyTime(session, id),
+    resetView() {
+      if (session.mode === "walk") setMode(session.prevMode);
+      const preset = orbitPreset(session.mode, session.cutDir);
+      lerpCam(session, preset.pos, preset.target, 0.7);
+    },
+    setCutDir(dir) {
+      session.cutDir = dir;
+      const range = cutRange(session);
+      session.cutValue = range.def;
+      const slider = mustEl<HTMLInputElement>("cut-slider");
+      slider.value = String(cutPanel(range, session.cutValue, "meters"));
+      updateCut(session);
+      const key = dir === "side" ? "cutSide" : dir === "front" ? "cutFront" : "cut";
+      lerpCam(session, CAM[key].pos, CAM[key].target, 0.8);
+    },
+    onCutInput(value) {
+      session.cutValue = value;
+      updateCut(session);
+    },
+    onReturn: () => setMode(session.prevMode || "exploded"),
+    getCutRange: () => cutRange(session),
+    getLayer: () => session.xrayLayer,
+    setLayer(id) {
+      session.xrayLayer = id;
+      setHouseVisibility(session);
+    },
+  });
+
+  bindWalkPointer(session);
+  canvas.addEventListener("mousemove", (event) => hotspots.onMouseMove(event));
+
+  const gate = createFrameGate(performance.now());
+  const poke = () => {
+    noteInput(gate, performance.now());
+    if (frameTimer === 0) return;
+    if (scheduleDelayMs(gate, performance.now()) >= 8) return;
+    window.clearTimeout(frameTimer);
+    frameTimer = 0;
+    scheduleFrame();
+  };
+  window.addEventListener("pointerdown", poke);
+  window.addEventListener("pointermove", poke);
+  window.addEventListener("wheel", poke, { passive: true });
+
+  window.addEventListener("keydown", (event) => {
+    poke();
+    session.walk.keys[event.code] = true;
+    if (event.code === "Escape") {
+      if (help.isOpen()) help.close();
+      else if (session.mode === "walk") setMode(session.prevMode || "exploded");
+    }
+    if ((event.code === "KeyE" || event.code === "KeyF") && session.mode === "walk") {
+      toggleNearestDoor(session);
+    }
+  });
+  window.addEventListener("keyup", (event) => {
+    poke();
+    session.walk.keys[event.code] = false;
+  });
+
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    applyRendererSize(renderer, window.innerWidth, window.innerHeight, window.devicePixelRatio);
+  });
+
+  const heldCam = new THREE.Vector3();
+  const heldTarget = new THREE.Vector3();
+  const clock = new THREE.Clock();
+  let roofTarget = ROOF_LIFT;
+  let lightKey = "";
+  let looping = false;
+  let frameHandle = 0;
+  let frameTimer = 0;
+
+  function cameraMoved() {
+    const moved =
+      camera.position.distanceToSquared(heldCam) > 1e-8 ||
+      orbit.target.distanceToSquared(heldTarget) > 1e-8;
+    heldCam.copy(camera.position);
+    heldTarget.copy(orbit.target);
+    return moved;
   }
-});
-window.addEventListener("keyup", (event) => {
-  session.walk.keys[event.code] = false;
-});
 
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-const clock = new THREE.Clock();
-let roofTarget = ROOF_LIFT;
-let lightKey = "";
-
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = Math.min(0.033, clock.getDelta());
-  roofTarget = session.mode === "exploded" ? ROOF_LIFT : 0;
-  session.roofY += (roofTarget - session.roofY) * Math.min(1, dt * 5.5);
-  rec.roofGroup.position.y = session.roofY;
-  const nextKey = `${session.mode}|${session.timeId}|${session.roofY.toFixed(3)}`;
-  if (nextKey !== lightKey) {
-    lightKey = nextKey;
-    syncOpenRoofLighting(session);
+  function drawFrame() {
+    const dt = Math.min(0.05, clock.getDelta());
+    roofTarget = session.mode === "exploded" ? ROOF_LIFT : 0;
+    session.roofY += (roofTarget - session.roofY) * Math.min(1, dt * 5.5);
+    rec.roofGroup.position.y = session.roofY;
+    const nextKey = `${session.mode}|${session.timeId}|${session.roofY.toFixed(3)}`;
+    if (nextKey !== lightKey) {
+      lightKey = nextKey;
+      syncOpenRoofLighting(session);
+    }
+    if (session.mode === "cut") updateCut(session);
+    tickCamera(session, dt);
+    if (session.walk.on) updateWalk(session, dt);
+    else orbit.update();
+    updateDoors(session, dt);
+    hotspots.updateLabel();
+    syncDoorPrompt(session);
+    pipeline.render();
   }
-  if (session.mode === "cut") updateCut(session);
-  tickCamera(session, dt);
-  if (session.walk.on) updateWalk(session, dt);
-  else orbit.update();
-  updateDoors(session, dt);
-  hotspots.updateLabel();
-  pipeline.render();
-}
 
-function hideLoader() {
-  const el = document.getElementById("loader");
-  if (!el) return;
-  el.classList.add("gone");
-  setTimeout(() => {
-    el.remove();
-  }, 700);
-}
-mustEl<HTMLElement>("skip").addEventListener("click", hideLoader);
+  function scheduleFrame() {
+    if (!looping || document.hidden || frameHandle !== 0 || frameTimer !== 0) return;
+    const delay = scheduleDelayMs(gate, performance.now());
+    if (delay > 4) {
+      frameTimer = window.setTimeout(() => {
+        frameTimer = 0;
+        frameHandle = requestAnimationFrame(onFrame);
+      }, delay);
+      return;
+    }
+    frameHandle = requestAnimationFrame(onFrame);
+  }
 
-async function start() {
+  function onFrame(now: number) {
+    frameHandle = 0;
+    const action = frameAction(gate, now, document.hidden);
+    if (action === "stop") return;
+    if (action === "draw") {
+      markDrawn(gate, now);
+      drawFrame();
+      if (cameraMoved()) noteInput(gate, now);
+    }
+    scheduleFrame();
+  }
+
+  function stopFrames() {
+    if (frameHandle !== 0) cancelAnimationFrame(frameHandle);
+    if (frameTimer !== 0) window.clearTimeout(frameTimer);
+    frameHandle = 0;
+    frameTimer = 0;
+  }
+
+  function arm(gateNow: FrameGate) {
+    clock.getDelta();
+    noteInput(gateNow, performance.now());
+    gateNow.lastDrawn = -1;
+    heldCam.copy(camera.position);
+    heldTarget.copy(orbit.target);
+    scheduleFrame();
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopFrames();
+      return;
+    }
+    if (looping) arm(gate);
+  });
+
+  await mark(loadStatus("gpu"));
   await renderer.init();
   session.backendName = readBackendName(renderer.backend as { isWebGPUBackend?: boolean });
   mustEl<HTMLElement>("gfx").textContent = session.backendName;
-  applyTime(session, "dusk");
-  setMode("exploded");
-  setHouseVisibility(session);
-  mustEl<HTMLElement>("loadbar").style.width = "100%";
-  animate();
-  setTimeout(hideLoader, 400);
-}
-void start();
 
-if (typeof __LAYERHOUSE_DEV__ === "undefined" || __LAYERHOUSE_DEV__) {
-  attachDemo(session, setMode, houseRoot);
+  for (const warm of plan) {
+    await mark(warm.status);
+    warm.run(session);
+  }
+
+  await mark(loadStatus("ready"));
+  presentExplodedDusk(session);
+  syncModeChrome("exploded");
+  if (typeof __LAYERHOUSE_DEV__ === "undefined" || __LAYERHOUSE_DEV__) {
+    attachDemo(session, setMode, houseRoot);
+  }
+
+  paintLoader(total, total, loadStatus("ready"));
+  await nextPaint();
+  looping = true;
+  arm(gate);
+  hideLoader();
 }
+
+void boot();

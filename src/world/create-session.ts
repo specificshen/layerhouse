@@ -27,7 +27,7 @@ export function createSession(parts: {
   sunDisc: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
   mats: Materials;
   rec: HouseRecord;
-  neighbors: THREE.Group;
+  context: THREE.Group;
   waterGrp: THREE.Group;
 }): Session {
   const {
@@ -48,7 +48,7 @@ export function createSession(parts: {
     sunDisc,
     mats,
     rec,
-    neighbors,
+    context,
     waterGrp,
   } = parts;
   const session: Session = {
@@ -69,7 +69,7 @@ export function createSession(parts: {
     sunDisc,
     mats,
     rec,
-    neighbors,
+    context,
     waterGrp,
     clipPlanes: [],
     clipGroup: null as unknown as Session["clipGroup"],
@@ -77,6 +77,7 @@ export function createSession(parts: {
     capGroup: new THREE.Group(),
     sectionBox: new THREE.Group(),
     pmrem: new PMREMGenerator(renderer),
+    envCache: new Map(),
     envTarget: null,
     cam: {
       active: false,

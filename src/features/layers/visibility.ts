@@ -64,7 +64,7 @@ export function setHouseVisibility(s: Session) {
   for (const id of LAYER_IDS) {
     s.rec.groups[id].visible = cellVisible(row[id], id, s.xrayLayer);
   }
-  s.neighbors.visible = true;
+  s.context.visible = true;
   s.waterGrp.visible = true;
   s.capGroup.visible = s.mode === "cut";
   s.sectionBox.visible = s.mode === "cut";

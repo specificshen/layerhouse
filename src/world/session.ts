@@ -56,7 +56,7 @@ export interface Session {
   sunDisc: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
   mats: Materials;
   rec: HouseRecord;
-  neighbors: THREE.Group;
+  context: THREE.Group;
   waterGrp: THREE.Group;
   clipPlanes: THREE.Plane[];
   clipGroup: ClippingGroup;
@@ -64,6 +64,7 @@ export interface Session {
   capGroup: THREE.Group;
   sectionBox: THREE.Group;
   pmrem: PMREMGenerator;
+  envCache: Map<TimeId, CubeRenderTarget>;
   envTarget: CubeRenderTarget | null;
   cam: CamAnim;
   walk: WalkState;

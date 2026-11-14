@@ -1,9 +1,7 @@
 import * as THREE from "three";
-import type { CubeRenderTarget } from "three/webgpu";
 import { ROOF_LIFT, TOD } from "@/config";
 import { setGrassColor, setLampIntensity } from "@/materials";
 import { applySky, placeSun } from "@/scene/sky";
-import { setNeighborGlow } from "@/scene/site/neighbors";
 import type { TimeId } from "@/types";
 import type { Session } from "./session";
 
@@ -55,12 +53,6 @@ export function addRoomBounce(parent: THREE.Object3D) {
     light.castShadow = false;
     parent.add(light);
   }
-}
-
-function releaseTarget(target: CubeRenderTarget | null) {
-  if (!target) return;
-  target.texture.dispose();
-  target.dispose();
 }
 
 function hasEmissive(mat: THREE.Material): mat is THREE.MeshStandardMaterial {
@@ -214,19 +206,19 @@ export function applyTime(s: Session, id: TimeId) {
     s.scene.fog.color.setHex(id === "day" ? 0xe6dfd4 : t.fog);
     s.scene.fog.density = t.fogDen;
   }
-  setNeighborGlow(s.neighbors, t.windowWarm * 0.9);
   setGrassColor(s.mats, t.grass);
   syncLawnBands(s);
   namedLights(s, id);
   if (s.rec.water) s.rec.water.overlay.material.color.setHex(t.waterTint);
-  releaseTarget(s.envTarget);
-  s.envTarget = null;
-  s.scene.environment = null;
-  const tmp = new THREE.Scene();
-  const skyClone = s.sky.mesh.clone();
-  skyClone.material = s.sky.mat;
-  tmp.add(skyClone);
-  const env = s.pmrem.fromScene(tmp, 0.06, 1, 600);
+  if (!s.envCache.has(id)) {
+    const tmp = new THREE.Scene();
+    const skyClone = s.sky.mesh.clone();
+    skyClone.material = s.sky.mat;
+    tmp.add(skyClone);
+    s.envCache.set(id, s.pmrem.fromScene(tmp, 0.06, 1, 600));
+  }
+  const env = s.envCache.get(id);
+  if (!env) throw new Error(`missing environment for ${id}`);
   s.envTarget = env;
   s.scene.environment = env.texture;
   syncOpenRoofLighting(s);

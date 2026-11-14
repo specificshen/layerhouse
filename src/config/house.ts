@@ -1,4 +1,4 @@
-/** 层宅 / Layer House — original courtyard house dimensions (meters). */
+/** 浅庭 / Light Court — original courtyard house dimensions (meters). */
 
 export const EYE = 1.62;
 /** Full floor assembly in section (structure + 30 mm finish). */
