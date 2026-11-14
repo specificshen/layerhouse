@@ -4,6 +4,7 @@ import { addBox, addCyl, addSphere } from "@/geom";
 import type { Materials } from "@/materials";
 import type { HouseGroups, HouseRecord } from "@/types";
 import { addCone } from "./forms";
+import { DINING, LIVING } from "./layout";
 import { createFurnishPalette } from "./palette";
 import {
   armchair,
@@ -95,13 +96,40 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
 
   // —— Living. West glazing stays clear: no cards, no curtains over the glass. ——
   rug(f, pal, rec, -4.3, y0, 2.0, 3.4, 2.6, 0x3a4038);
-  sofa(f, pal, rec, -4.4, y0, 0.55, 0, 2.6);
-  armchair(f, pal, rec, -2.55, y0, 2.4, -Math.PI / 3);
-  armchair(f, pal, rec, -6.05, y0, 2.6, Math.PI / 4);
-  table(f, pal, -4.3, y0, 2.15, 1.2, 0.7, 0.4, pal.oakDark, "coffee");
-  tv(f, pal, -5.8, y0, 3.15, Math.PI / 2);
-  bench(f, pal, -6.84, y0, 1.25, Math.PI / 2, 1.5);
-  bench(f, pal, -1.84, y0, 5.45, Math.PI / 2, 0.84);
+  sofa(f, pal, rec, LIVING.sofa.x, y0, LIVING.sofa.z, 0, LIVING.sofa.len);
+  armchair(f, pal, rec, LIVING.chairEast.x, y0, LIVING.chairEast.z, LIVING.chairEast.yaw);
+  armchair(f, pal, rec, LIVING.chairWest.x, y0, LIVING.chairWest.z, LIVING.chairWest.yaw);
+  table(
+    f,
+    pal,
+    LIVING.coffee.x,
+    y0,
+    LIVING.coffee.z,
+    LIVING.coffee.w,
+    LIVING.coffee.d,
+    0.4,
+    pal.walnut,
+    "coffee",
+  );
+  tv(f, pal, LIVING.tv.x, y0, LIVING.tv.z, LIVING.tv.yaw);
+  bench(
+    f,
+    pal,
+    LIVING.benchWindow.x,
+    y0,
+    LIVING.benchWindow.z,
+    LIVING.benchWindow.yaw,
+    LIVING.benchWindow.len,
+  );
+  bench(
+    f,
+    pal,
+    LIVING.benchEntry.x,
+    y0,
+    LIVING.benchEntry.z,
+    LIVING.benchEntry.yaw,
+    LIVING.benchEntry.len,
+  );
   plant(f, pal, -2.45, y0, 4.65);
   // Northern living recessed light. Walk view puts it on the solid return; ease only there.
   lamp(f, rec, -4.3, Y_GF_CEIL - 0.02, 1.6, mats, "recessed", 0.9, 0.38);
@@ -114,25 +142,40 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   art(f, pal, rec, -7.04, y0 + 1.5, -1.82, Math.PI / 2, 0.32, 0.44, 0xc2b29a);
 
   // —— Dining ——
-  table(f, pal, 4.3, y0, 3.6, 1.8, 0.9, 0.75, pal.oak, "dining");
+  table(
+    f,
+    pal,
+    DINING.table.x,
+    y0,
+    DINING.table.z,
+    DINING.table.w,
+    DINING.table.d,
+    0.75,
+    pal.oak,
+    "dining",
+  );
   for (const dz of [-0.55, 0.55]) {
-    chair(f, pal, 3.55, y0, 3.6 + dz, dz < 0 ? 0 : Math.PI);
-    chair(f, pal, 5.05, y0, 3.6 + dz, dz < 0 ? 0 : Math.PI);
+    chair(f, pal, 3.55, y0, DINING.table.z + dz, dz < 0 ? 0 : Math.PI);
+    chair(f, pal, 5.05, y0, DINING.table.z + dz, dz < 0 ? 0 : Math.PI);
   }
-  chair(f, pal, 4.3, y0, 2.95, 0);
-  chair(f, pal, 4.3, y0, 4.25, Math.PI);
+  chair(f, pal, DINING.table.x, y0, 2.95, 0);
+  chair(f, pal, DINING.table.x, y0, 4.25, Math.PI);
   lamp(f, rec, 3.85, 2.85, 3.6, mats, "pendant", 1.1);
   lamp(f, rec, 4.75, 2.85, 3.6, mats, "pendant", 1.1);
 
   // East counter sits under the sill. Uppers and the fridge stay on the solid pier.
-  cabinetRun(f, pal, mats, rec, 6.38, y0, 0, Math.PI / 2, 2.9, 0.9, 0.58, { sinkAt: -0.85 });
+  cabinetRun(f, pal, mats, rec, 6.38, y0, 0, Math.PI / 2, 2.9, 0.9, 0.58, {
+    sinkAt: -0.85,
+    shaker: true,
+  });
   addBox(f, 0.016, 0.14, 2.45, 6.688, y0 + 0.99, -0.05, pal.tile, rec, { noCast: true });
   fridge(f, pal, rec, 6.34, y0, 1.9, Math.PI / 2);
   cabinetRun(f, pal, mats, rec, 6.5, y0 + 1.48, 2.62, Math.PI / 2, 0.76, 0.68, 0.34, {
     upper: true,
+    shaker: true,
   });
-  island(f, pal, mats, rec, 4.4, y0, 0.4, 1.7, 0.82);
-  hood(f, pal, mats, rec, 4.4, y0, 0.4);
+  island(f, pal, mats, rec, DINING.island.x, y0, DINING.island.z, DINING.island.w, DINING.island.d);
+  hood(f, pal, mats, rec, DINING.island.x, y0, DINING.island.z);
   lamp(f, rec, 4.4, Y_GF_CEIL - 0.02, 0.4, mats, "recessed", 0.75);
   lamp(f, rec, 6.15, Y_GF_CEIL - 0.02, 0.2, mats, "recessed", 0.55);
   lamp(f, rec, 4.2, Y_GF_CEIL - 0.02, 5.2, mats, "recessed", 0.6);
@@ -198,6 +241,7 @@ export function furnishHouse(groups: HouseGroups, mats: Materials, rec: HouseRec
   cabinetRun(f, pal, mats, rec, 6.53, y2, 4.1, Math.PI / 2, 2.15, 0.42, 0.32, {
     topMat: pal.oak,
     books: true,
+    shaker: true,
   });
   armchair(f, pal, rec, 3.5, y2, 5.0, Math.PI * 0.8);
   lamp(f, rec, 5.0, Y_L2_CEIL - 0.02, 1.0, mats, "recessed", 0.7);

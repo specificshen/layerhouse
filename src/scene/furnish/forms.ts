@@ -61,6 +61,31 @@ function roundedRect(w: number, h: number, r: number): THREE.Shape {
   return shape;
 }
 
+function shakerShape(w: number, h: number, rail: number): THREE.Shape {
+  const shape = new THREE.Shape();
+  const x = -w / 2;
+  const y = -h / 2;
+  shape.moveTo(x, y);
+  shape.lineTo(x + w, y);
+  shape.lineTo(x + w, y + h);
+  shape.lineTo(x, y + h);
+  shape.closePath();
+  const inset = Math.max(0.012, Math.min(rail, w * 0.28, h * 0.28));
+  const hole = new THREE.Path();
+  const ix = x + inset;
+  const iy = y + inset;
+  const iw = w - inset * 2;
+  const ih = h - inset * 2;
+  // Opposite winding to the outer rect so the opening is a hole.
+  hole.moveTo(ix, iy);
+  hole.lineTo(ix, iy + ih);
+  hole.lineTo(ix + iw, iy + ih);
+  hole.lineTo(ix + iw, iy);
+  hole.closePath();
+  shape.holes.push(hole);
+  return shape;
+}
+
 function archShape(w: number, h: number, r: number): THREE.Shape {
   const shape = new THREE.Shape();
   const x0 = -w / 2;
@@ -132,6 +157,55 @@ export function addPanel(
     extrude(roundedRect(w, h, Math.max(0.003, bevel)), thick, bevel),
   );
   return place(parent, geo, x, y, z, mat, flags);
+}
+
+/**
+ * Shaker face. Width X, height Y, thickness Z. The panel sits behind the frame.
+ * One cached frame per size, shared by every door of that bay.
+ */
+export function addShaker(
+  parent: THREE.Object3D,
+  w: number,
+  h: number,
+  thick: number,
+  rail: number,
+  x: number,
+  y: number,
+  z: number,
+  frame: THREE.Material,
+  panel: THREE.Material,
+  flags: FormFlags = {},
+  liner?: THREE.Material,
+  /** How far the panel face sits behind the frame face. 0 keeps the door reveal. */
+  faceSetback = 0,
+): void {
+  const inset = Math.max(0.012, Math.min(rail, w * 0.28, h * 0.28));
+  const geo = cached(`shaker:${q(w)}:${q(h)}:${q(thick)}:${q(inset)}`, () =>
+    extrude(shakerShape(w, h, inset), thick, 0),
+  );
+  const frameMesh = place(parent, geo, x, y, z, frame, flags);
+  const openingW = Math.max(0.02, w - inset * 2);
+  const openingH = Math.max(0.02, h - inset * 2);
+  const pad = Math.min(0.01, Math.max(0.003, Math.min(openingW, openingH) * 0.045));
+  const panelThick = Math.max(0.008, thick * 0.5);
+  const panelZ = faceSetback > 0 ? thick / 2 - faceSetback - panelThick / 2 : -thick * 0.28;
+  if (liner) {
+    const linerZ = faceSetback > 0 ? panelZ - panelThick / 2 - 0.002 : -thick * 0.55;
+    addPanel(frameMesh, openingW + 0.004, openingH + 0.004, 0.006, 0, 0, linerZ, liner, {
+      noCast: true,
+    });
+  }
+  addPanel(
+    frameMesh,
+    Math.max(0.02, openingW - pad * 2),
+    Math.max(0.02, openingH - pad * 2),
+    panelThick,
+    0,
+    0,
+    panelZ,
+    panel,
+    { noCast: true },
+  );
 }
 
 /** Upholstered panel with a rounded top. Width X, height Y, thickness Z. */

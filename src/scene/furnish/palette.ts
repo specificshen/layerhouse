@@ -1,5 +1,7 @@
 import type { MeshStandardMaterial } from "three";
 import type { Materials } from "@/materials";
+import { createCaseFinish } from "./finish";
+import { PAGE_TONE } from "./finish-spec";
 
 export interface FurnishPalette {
   oak: MeshStandardMaterial;
@@ -7,6 +9,11 @@ export interface FurnishPalette {
   walnut: MeshStandardMaterial;
   fabric: MeshStandardMaterial;
   moss: MeshStandardMaterial;
+  upholstery: MeshStandardMaterial;
+  seat: MeshStandardMaterial;
+  /** Seat cloth without the weave, for tops small enough that the weave grids. */
+  pad: MeshStandardMaterial;
+  paper: MeshStandardMaterial;
   rust: MeshStandardMaterial;
   linen: MeshStandardMaterial;
   sheet: MeshStandardMaterial;
@@ -15,6 +22,9 @@ export interface FurnishPalette {
   sand: MeshStandardMaterial;
   stone: MeshStandardMaterial;
   metal: MeshStandardMaterial;
+  brushed: MeshStandardMaterial;
+  charcoal: MeshStandardMaterial;
+  cooktop: MeshStandardMaterial;
   appliance: MeshStandardMaterial;
   ink: MeshStandardMaterial;
   screen: MeshStandardMaterial;
@@ -42,14 +52,7 @@ function cloneStd(src: MeshStandardMaterial, color?: number): MeshStandardMateri
 
 /** Furniture finishes. Clones stay here so the shared scene materials are unchanged. */
 export function createFurnishPalette(mats: Materials): FurnishPalette {
-  const oak = cloneStd(mats.woodMid);
-  oak.roughness = 0.52;
-
-  const oakDark = cloneStd(mats.woodMid, 0x6b5344);
-  oakDark.roughness = 0.58;
-
-  const walnut = cloneStd(mats.woodDark, 0x2a211c);
-  walnut.roughness = 0.5;
+  const casework = createCaseFinish();
 
   const sheet = cloneStd(mats.linen, 0xf4efe6);
   sheet.roughness = 0.9;
@@ -89,20 +92,41 @@ export function createFurnishPalette(mats: Materials): FurnishPalette {
   appliance.roughness = 0.42;
   appliance.metalness = 0.04;
 
+  const moss = cloneStd(mats.cushionB);
+
+  const pad = casework.seat.clone();
+  pad.map = null;
+  pad.name = "seat-plain";
+  pad.clippingPlanes = [];
+  pad.clipShadows = true;
+
+  const paper = cloneStd(mats.linen, PAGE_TONE);
+  paper.map = null;
+  paper.roughness = 0.92;
+  paper.metalness = 0;
+  paper.name = "paper";
+
   return {
-    oak,
-    oakDark,
-    walnut,
+    oak: casework.oak,
+    oakDark: casework.oakDark,
+    walnut: casework.walnut,
     fabric: mats.fabric,
-    moss: mats.cushionB,
+    moss,
+    upholstery: casework.upholstery,
+    seat: casework.seat,
+    pad,
+    paper,
     rust: mats.cushionC,
     linen: mats.linen,
     sheet,
     sham,
     sage,
     sand,
-    stone: mats.concrete,
+    stone: casework.stone,
     metal: mats.steel,
+    brushed: casework.brushed,
+    charcoal: casework.charcoal,
+    cooktop: casework.cooktop,
     appliance,
     ink,
     screen,
