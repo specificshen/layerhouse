@@ -44,7 +44,7 @@ import { createHelpDialog } from "@/ui/help-dialog";
 import { bindHud, syncModeChrome } from "@/ui/hud";
 import { hideLoader, loadStatus, nextPaint, paintLoader, showLoadStep } from "@/ui/loader";
 import {
-  addRoomBounce,
+  addBounceLights,
   applyTime,
   attachDemo,
   createDuskLights,
@@ -140,7 +140,7 @@ async function boot() {
     waterGrp,
   });
   mountClipGroup(session);
-  addRoomBounce(scene);
+  addBounceLights(scene);
 
   const hotspots = createHotspots(scene, camera, canvas, rec, () => session.mode);
   let film: FilmController | null = null;

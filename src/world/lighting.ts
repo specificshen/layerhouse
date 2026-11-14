@@ -3,6 +3,7 @@ import { ROOF_LIFT, TOD } from "@/config";
 import { setGrassColor, setLampIntensity } from "@/materials";
 import { applySky, placeSun } from "@/scene/sky";
 import type { TimeId } from "@/types";
+import { syncBounceLights } from "./bounce-lights";
 import type { Session } from "./session";
 
 /**
@@ -36,23 +37,6 @@ export function createDuskLights(scene: THREE.Scene) {
   fill.position.set(8, 10, -14);
   scene.add(fill);
   return { hemi, amb, sun, fill };
-}
-
-const ROOM_BOUNCE: ReadonlyArray<readonly [number, number, number]> = [
-  [-4.2, 1.65, 1.8],
-  [4.6, 1.7, 1.4],
-  [-4.4, 1.55, -7.4],
-  [1.1, 4.85, -6.1],
-];
-
-export function addRoomBounce(parent: THREE.Object3D) {
-  for (const [x, y, z] of ROOM_BOUNCE) {
-    const light = new THREE.PointLight(0xfff0dc, 0, 5.2, 2);
-    light.name = "roomBounce";
-    light.position.set(x, y, z);
-    light.castShadow = false;
-    parent.add(light);
-  }
 }
 
 function hasEmissive(mat: THREE.Material): mat is THREE.MeshStandardMaterial {
@@ -93,9 +77,10 @@ export function syncOpenRoofLighting(s: Session) {
   s.amb.intensity = t.ambInt * (1 - open * 0.5);
   s.fill.intensity = t.fillInt * (1 - open * 0.4);
   s.sun.intensity = t.sunInt * (1 - open * 0.45);
+  syncBounceLights(s.scene, s.timeId, open);
   s.scene.environmentIntensity =
     (s.timeId === "night" ? 0.32 : s.timeId === "day" ? 0.7 : 0.5) * (1 - open * 0.82);
-  const floorEnv = 0.62 * (1 - open * 0.9);
+  const floorEnv = 0.4 * (1 - open * 0.9);
   s.mats.floor.envMapIntensity = floorEnv;
   const floorCol = 1 - open * 0.16;
   s.mats.floor.color.setRGB(floorCol, floorCol * 0.96, floorCol * 0.9);
@@ -175,10 +160,6 @@ function namedLights(s: Session, id: TimeId) {
     if (!(o instanceof THREE.PointLight)) return;
     if (o.name === "pathLight") o.intensity = t.lamps * 1.7;
     if (o.name === "poolLight") o.intensity = t.poolGlow * (id === "day" ? 0.08 : 0.85);
-    if (o.name === "roomBounce") {
-      o.intensity = id === "day" ? 0.24 : id === "dawn" ? 0.16 : id === "dusk" ? 0.12 : 0.05;
-      o.color.setHex(id === "day" ? 0xd5e4f4 : id === "night" ? 0xffd8b0 : 0xffc8a4);
-    }
   });
   s.mats.pathLight.emissiveIntensity = t.lamps * 1.8;
   s.mats.poolTile.emissiveIntensity = t.poolGlow * (id === "day" ? 0.03 : 0.26);
