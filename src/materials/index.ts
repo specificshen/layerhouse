@@ -383,7 +383,7 @@ export function createMaterials(textures: SceneTextures): Materials {
     color: COLORS.interior,
     roughness: 0.82,
     metalness: 0.0,
-    envMapIntensity: 0.48,
+    envMapIntensity: 0.3,
   });
 
   const floor = std({
@@ -392,7 +392,7 @@ export function createMaterials(textures: SceneTextures): Materials {
     roughnessMap: t.oakRough,
     roughness: 0.48,
     metalness: 0.0,
-    envMapIntensity: 0.4,
+    envMapIntensity: 0.3,
   });
 
   const roof = std({
