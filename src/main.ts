@@ -17,6 +17,8 @@ import {
 } from "@/engine";
 import type { FrameGate } from "@/engine";
 import { lerpCam, orbitPreset, tickCamera } from "@/features/camera";
+import { createFilm, filmAutostart } from "@/features/film";
+import type { FilmController } from "@/features/film";
 import { createHotspots } from "@/features/hotspots";
 import { setHouseVisibility } from "@/features/layers/visibility";
 import {
@@ -141,8 +143,10 @@ async function boot() {
   addRoomBounce(scene);
 
   const hotspots = createHotspots(scene, camera, canvas, rec, () => session.mode);
+  let film: FilmController | null = null;
 
   function setMode(next: ViewMode) {
+    if (film?.isPlaying()) return;
     if (next === session.mode && next !== "cut") return;
     if (session.mode === "walk" && next !== "walk") exitWalk(session);
     if (next !== "walk" && session.mode !== "boot" && session.mode !== "walk")
@@ -167,13 +171,18 @@ async function boot() {
   const help = createHelpDialog();
   bindHud({
     setMode,
-    applyTime: (id) => applyTime(session, id),
+    applyTime: (id) => {
+      if (film?.isPlaying()) return;
+      applyTime(session, id);
+    },
     resetView() {
+      if (film?.isPlaying()) return;
       if (session.mode === "walk") setMode(session.prevMode);
       const preset = orbitPreset(session.mode, session.cutDir);
       lerpCam(session, preset.pos, preset.target, 0.7);
     },
     setCutDir(dir) {
+      if (film?.isPlaying()) return;
       session.cutDir = dir;
       const range = cutRange(session);
       session.cutValue = range.def;
@@ -184,20 +193,32 @@ async function boot() {
       lerpCam(session, CAM[key].pos, CAM[key].target, 0.8);
     },
     onCutInput(value) {
+      if (film?.isPlaying()) return;
       session.cutValue = value;
       updateCut(session);
     },
-    onReturn: () => setMode(session.prevMode || "exploded"),
+    onReturn: () => {
+      if (film?.isPlaying()) {
+        film.stop();
+        return;
+      }
+      setMode(session.prevMode || "exploded");
+    },
     getCutRange: () => cutRange(session),
     getLayer: () => session.xrayLayer,
     setLayer(id) {
+      if (film?.isPlaying()) return;
       session.xrayLayer = id;
       setHouseVisibility(session);
     },
   });
 
   bindWalkPointer(session);
-  canvas.addEventListener("mousemove", (event) => hotspots.onMouseMove(event));
+  canvas.addEventListener("mousemove", (event) => {
+    if (film?.isPlaying()) return;
+    hotspots.onMouseMove(event);
+  });
+  mustEl<HTMLButtonElement>("btn-film").addEventListener("click", () => film?.toggle());
 
   const gate = createFrameGate(performance.now());
   const poke = () => {
@@ -214,9 +235,19 @@ async function boot() {
 
   window.addEventListener("keydown", (event) => {
     poke();
+    if (
+      event.code === "KeyP" &&
+      !event.repeat &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey
+    ) {
+      film?.toggle();
+    }
     session.walk.keys[event.code] = true;
     if (event.code === "Escape") {
-      if (help.isOpen()) help.close();
+      if (film?.isPlaying()) film.stop();
+      else if (help.isOpen()) help.close();
       else if (session.mode === "walk") setMode(session.prevMode || "exploded");
     }
     if ((event.code === "KeyE" || event.code === "KeyF") && session.mode === "walk") {
@@ -254,6 +285,7 @@ async function boot() {
 
   function drawFrame() {
     const dt = Math.min(0.05, clock.getDelta());
+    film?.tick(dt, document.hidden);
     roofTarget = session.mode === "exploded" ? ROOF_LIFT : 0;
     session.roofY += (roofTarget - session.roofY) * Math.min(1, dt * 5.5);
     rec.roofGroup.position.y = session.roofY;
@@ -263,9 +295,11 @@ async function boot() {
       syncOpenRoofLighting(session);
     }
     if (session.mode === "cut") updateCut(session);
-    tickCamera(session, dt);
-    if (session.walk.on) updateWalk(session, dt);
-    else orbit.update();
+    if (!film?.isPlaying()) {
+      tickCamera(session, dt);
+      if (session.walk.on) updateWalk(session, dt);
+      else orbit.update();
+    }
     updateDoors(session, dt);
     hotspots.updateLabel();
     syncDoorPrompt(session);
@@ -334,8 +368,21 @@ async function boot() {
   await mark(loadStatus("ready"));
   presentExplodedDusk(session);
   syncModeChrome("exploded");
+  film = createFilm({
+    session,
+    syncMode: syncModeChrome,
+    closeHelp: () => help.close(),
+    dismissHover: () => hotspots.dismiss(),
+    noteActivity: () => noteInput(gate, performance.now()),
+  });
   if (typeof __LAYERHOUSE_DEV__ === "undefined" || __LAYERHOUSE_DEV__) {
-    attachDemo(session, setMode, houseRoot);
+    const controls = film;
+    attachDemo(session, setMode, houseRoot, {
+      start: () => controls.start(),
+      stop: () => controls.stop(),
+      seek: (seconds) => controls.seek(seconds),
+      state: () => controls.state(),
+    });
   }
 
   paintLoader(total, total, loadStatus("ready"));
@@ -343,6 +390,7 @@ async function boot() {
   looping = true;
   arm(gate);
   hideLoader();
+  if (filmAutostart(params)) film.start(false);
 }
 
 void boot();

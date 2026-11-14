@@ -10,10 +10,18 @@ import { applyTime, syncOpenRoofLighting } from "./lighting";
 import { cutRange, updateCut } from "./section";
 import type { Session } from "./session";
 
+export interface DemoFilm {
+  start: () => void;
+  stop: () => void;
+  seek: (seconds: number) => void;
+  state: () => { playing: boolean; time: number };
+}
+
 export function attachDemo(
   session: Session,
   setMode: (next: ViewMode) => void,
   houseRoot: THREE.Object3D,
+  film: DemoFilm,
 ) {
   const { camera, orbit, rec, context, waterGrp } = session;
   const demo: DemoApi = {
@@ -101,6 +109,12 @@ export function attachDemo(
         cutValue: session.cutValue,
         roofY: session.roofY,
       };
+    },
+    startFilm: () => film.start(),
+    stopFilm: () => film.stop(),
+    seekFilm: (seconds: number) => film.seek(seconds),
+    get filmState() {
+      return film.state();
     },
   };
   window.__demo = demo;

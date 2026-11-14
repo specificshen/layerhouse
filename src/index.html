@@ -21,6 +21,7 @@
     </div>
 
     <div class="hud" id="hud">
+      <div id="film-veil" aria-hidden="true"></div>
       <div class="brand">
         <h1 id="brand-title"></h1>
         <div class="sub" id="brand-sub"></div>
@@ -46,6 +47,20 @@
       </div>
 
       <div class="top-right">
+        <button
+          class="film-btn"
+          id="btn-film"
+          type="button"
+          aria-pressed="false"
+          title="电影 Film · P"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="film-play" d="M8 6.2v11.6L18 12z" />
+            <rect class="film-stop" x="7.2" y="7.2" width="9.6" height="9.6" rx="0.6" />
+          </svg>
+          <span class="film-zh" id="film-zh">电影</span>
+          <span class="film-en" id="film-en">Film</span>
+        </button>
         <button class="icon-btn" id="btn-reset" title="Reset view / 重置视角">
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="7" />
@@ -218,8 +233,15 @@
         </div>
         <div class="extra">
           默认进入「剖开 +
-          黄昏」。外圈切换观察方式，靠近圆心切换白昼和黎明，夜晚和黄昏在左外侧。透视模式可逐层查看结构与机电。
+          黄昏」。外圈切换观察方式，靠近圆心切换白昼和黎明，夜晚和黄昏在左外侧。透视模式可逐层查看结构与机电。右上角「电影」或
+          P 播放简介，Esc 结束。
         </div>
+      </div>
+
+      <div id="film-card" aria-hidden="true">
+        <h2 id="film-title"></h2>
+        <p class="film-sub" id="film-sub"></p>
+        <p class="film-meta" id="film-meta"></p>
       </div>
     </div>
 

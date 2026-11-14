@@ -17,6 +17,9 @@ export function applyLabels() {
   text("stat-area", String(STATS.area));
   text("stat-year", String(STATS.year));
   text("brand-tags", STATS.tags);
+  text("film-title", TITLE);
+  text("film-sub", SUBTITLE);
+  text("film-meta", `${STATS.area} m² · ${STATS.year}`);
 
   for (const mode of VIEW_MODES) {
     const tip = document.querySelector(`[data-view="${mode.id}"] .tip`);
