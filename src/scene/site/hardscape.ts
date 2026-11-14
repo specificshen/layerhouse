@@ -155,27 +155,10 @@ const LAWN_BLOCKS: ReadonlyArray<readonly [number, number, number, number]> = [
   [0.8, 4.0, -15.6, -9.6],
 ];
 
-const LAWN_HOUSES: ReadonlyArray<readonly [number, number, number]> = [
-  [-18, -28, 8.4],
-  [4, -32, 8.4],
-  [24, -26, 8.6],
-  [24, 2, 7.8],
-  [27, 16, 7.2],
-  [-24, 3, 7.8],
-  [-26, 18, 7.2],
-  [-8, 26, 8.2],
-  [10, 28, 8.2],
-];
-
 function lawnBlocked(x: number, z: number) {
   if (z < -11.6 || z > 13.05) return true;
   for (const [x0, x1, z0, z1] of LAWN_BLOCKS) {
     if (x >= x0 && x <= x1 && z >= z0 && z <= z1) return true;
-  }
-  for (const [hx, hz, radius] of LAWN_HOUSES) {
-    const dx = x - hx;
-    const dz = z - hz;
-    if (dx * dx + dz * dz < radius * radius) return true;
   }
   return false;
 }

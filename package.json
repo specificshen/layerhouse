@@ -1,7 +1,7 @@
 {
   "name": "layerhouse",
   "version": "1.0.0",
-  "description": "层宅 / Layer House — original Three.js architectural viewer, Bun + TypeScript",
+  "description": "浅庭 / Light Court — original Three.js architectural viewer, Bun + TypeScript",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.4.4",

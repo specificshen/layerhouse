@@ -15,7 +15,7 @@ export function attachDemo(
   setMode: (next: ViewMode) => void,
   houseRoot: THREE.Object3D,
 ) {
-  const { camera, orbit, rec, neighbors, waterGrp } = session;
+  const { camera, orbit, rec, context, waterGrp } = session;
   const demo: DemoApi = {
     setMode,
     applyTime: (id) => applyTime(session, id),
@@ -66,7 +66,7 @@ export function attachDemo(
       rec.groups[id].visible = visible;
     },
     showNeighbors(visible: boolean) {
-      neighbors.visible = visible;
+      context.visible = visible;
     },
     colorCaps(on: boolean) {
       session.capColors = on;
